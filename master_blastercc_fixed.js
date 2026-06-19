@@ -245,6 +245,16 @@ function _stripPrice(s) {
 }
 
 // ── Gatilho ao editar status ──────────────────────────────────
+function _normalizarWpp(wpp) {
+  var d = String(wpp || "").replace(/\D/g, "");
+  if (d.length >= 12 && d.substring(0,2) === "55") d = d.substring(2);
+  return d.length > 8 ? d.slice(-8) : d;
+}
+
+function _chaveItem(wpp, produto) {
+  return _normalizarWpp(wpp) + "|" + _stripPrice(String(produto || "").toLowerCase());
+}
+
 function aoEditar(e) {
   try {
     var sheet   = e.range.getSheet();
@@ -270,7 +280,7 @@ function aoEditar(e) {
 
       // Ler chave desta linha em Pagamentos: WhatsApp + Item + Qtd
       var dadosPag = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
-      var wppPag   = dadosPag[1] ? dadosPag[1].toString().replace(/\D/g,"").slice(-8) : "";
+      var wppPag   = _normalizarWpp(dadosPag[1]);
       var itemPag  = dadosPag[2] ? dadosPag[2].toString().trim().toLowerCase() : "";
       var qtdPag   = parseInt(dadosPag[3]) || 1;
       var stPag    = dadosPag[8] ? dadosPag[8].toString().trim() : "🟡 Pendente";
@@ -301,7 +311,7 @@ function aoEditar(e) {
 
       var dadosPed = abaPed.getDataRange().getValues();
       for (var i = 1; i < dadosPed.length; i++) {
-        var wppPed  = dadosPed[i][colWpp] ? dadosPed[i][colWpp].toString().replace(/\D/g,"").slice(-8) : "";
+        var wppPed  = _normalizarWpp(dadosPed[i][colWpp]);
         var prodPed = dadosPed[i][colProd] ? dadosPed[i][colProd].toString().toLowerCase() : "";
         // remover "- R$ xx,xx" e emojis para comparar com itemPag
         var prodNorm = prodPed.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/^[^\w\u00C0-\u024F]+/u,"").trim();
@@ -372,7 +382,7 @@ function aoEditar(e) {
         var colQtdP   = acharCol(cabPed2, ["quantid"]);
 
         var colNomeP = acharCol(cabPed2, ["nome"]);
-        var wppPed2  = colWppP  > -1 ? dadosPed2[colWppP].toString().replace(/\D/g,"").slice(-8)  : "";
+        var wppPed2  = colWppP  > -1 ? _normalizarWpp(dadosPed2[colWppP]) : "";
         var nomePed2 = colNomeP > -1 ? _normalizarPg(dadosPed2[colNomeP].toString()) : "";
         var prodPed2 = colProdP > -1 ? dadosPed2[colProdP].toString().toLowerCase() : "";
         prodPed2 = prodPed2.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/\s+/g," ").trim();
@@ -390,13 +400,15 @@ function aoEditar(e) {
         var dadosPag2 = abaPag2.getDataRange().getValues();
         var matchIdx = -1;
         for (var k = 1; k < dadosPag2.length; k++) {
-          var wppPag2  = dadosPag2[k][1] ? dadosPag2[k][1].toString().replace(/\D/g,"").slice(-8) : "";
+          var wppPag2  = _normalizarWpp(dadosPag2[k][1]);
           var nomePag2 = _normalizarPg(dadosPag2[k][0] ? dadosPag2[k][0].toString() : "");
           var itemPag2 = dadosPag2[k][2] ? dadosPag2[k][2].toString().toLowerCase() : "";
           var qtdPag2  = parseInt(dadosPag2[k][3]) || 1;
-          var prodMatch = _stripPrice(itemPag2) === _stripPrice(prodPed2);
-          if (wppPag2 === wppPed2 && qtdPag2 === qtdPed2 && prodMatch) { matchIdx = k; break; }
-          if (matchIdx === -1 && nomePag2 === nomePed2 && prodMatch) matchIdx = k;
+          var chPag = _chaveItem(wppPag2, itemPag2);
+          var chPed = _chaveItem(wppPed2, prodPed2);
+          if (chPag === chPed) { matchIdx = k; break; }
+          // fallback: nome normalizado + produto (tolera WPP com typo)
+          if (matchIdx === -1 && _normalizarPg(dadosPag2[k][0]||"") === nomePed2 && _stripPrice(itemPag2) === _stripPrice(prodPed2)) matchIdx = k;
         }
 
         if (matchIdx > -1) {
@@ -736,8 +748,7 @@ function _coletarItensPagamentos(ss) {
 
       var itemSimples = prod.replace(/\s*-?\s*R\$\s*[\d.,]+\s*$/, "").trim();
 
-      var wppKey = wpp.replace(/\D/g,"");
-      if (wppKey.length >= 12 && wppKey.substring(0,2)==="55") wppKey = wppKey.substring(2);
+      var wppKey = _normalizarWpp(wpp);
 
       itens.push({
         nome: nome, wpp: wpp, wppKey: wppKey,
@@ -821,7 +832,7 @@ function _lerPagosManuais(ss) {
     var item30 = wppKey || _normalizarPg(nome);
     var rawVU = colVU>-1 ? dados[i][colVU] : "";
     var vu = String(rawVU || "").replace(/[^0-9,\.]/g,"").replace(",",".");
-    var chave = wpp8 + "|" + item + "|" + vu;
+    var chave = _chaveItem(wpp8, item);
     pagos[chave] = valor;
   }
   return pagos;
@@ -882,7 +893,7 @@ function sincronizarStatusParaPagamentos() {
     else if (stPed.indexOf("Enviado")   > -1) stNovo = "📦 Enviado";
     else                                       stNovo = "🟡 Pendente";
 
-    var wppPed  = colWppP  > -1 ? dadosPed[i][colWppP].toString().replace(/\D/g,"").slice(-8)  : "";
+    var wppPed  = colWppP  > -1 ? _normalizarWpp(dadosPed[i][colWppP]) : "";
     var nomePed = colNomeP > -1 ? _normalizarPg(dadosPed[i][colNomeP].toString()) : "";
     var prodPed = colProdP > -1 ? dadosPed[i][colProdP].toString().toLowerCase() : "";
     prodPed = prodPed.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/\s+/g," ").trim();
@@ -890,13 +901,14 @@ function sincronizarStatusParaPagamentos() {
 
     var matchIdx = -1;
     for (var k = 1; k < dadosPag.length; k++) {
-      var wppPag  = dadosPag[k][1] ? dadosPag[k][1].toString().replace(/\D/g,"").slice(-8) : "";
+      var wppPag  = _normalizarWpp(dadosPag[k][1]);
       var nomePag = _normalizarPg(dadosPag[k][0] ? dadosPag[k][0].toString() : "");
       var itemPag = dadosPag[k][2] ? dadosPag[k][2].toString().toLowerCase() : "";
       var qtdPag  = parseInt(dadosPag[k][3]) || 1;
-      var prodOk  = _stripPrice(itemPag) === _stripPrice(prodPed);
-      if (wppPag === wppPed && qtdPag === qtdPed && prodOk) { matchIdx = k; break; }
-      if (matchIdx === -1 && nomePag === nomePed && prodOk) matchIdx = k;
+      var chPag = _chaveItem(wppPag, itemPag);
+      var chPed = _chaveItem(wppPed, prodPed);
+      if (chPag === chPed) { matchIdx = k; break; }
+      if (matchIdx === -1 && nomePag === nomePed && _stripPrice(itemPag) === _stripPrice(prodPed)) matchIdx = k;
     }
 
     if (matchIdx > -1) {
@@ -935,13 +947,12 @@ function _lerStatusManuais(ss) {
   if (cWpp < 0 || cItem < 0 || cStatus < 0) return mapa;
   for (var r = 1; r < dados.length; r++) {
     var row = dados[r];
-    var wpp = String(row[cWpp] || "").replace(/\D/g, "").replace(/^55/, "");
-    if (wpp.length > 8) wpp = wpp.slice(-8);
+    var wpp = _normalizarWpp(row[cWpp]);
     var item = String(row[cItem] || "").trim();
     var vu   = String(row[cVU] || "").replace(/[^0-9,\.]/g,"").replace(",",".");
     var st   = String(row[cStatus] || "").trim();
     if (!wpp || !item) continue;
-    var chave = wpp + "|" + item + "|" + vu;
+    var chave = _chaveItem(wpp, item);
     if (st) mapa[chave] = st;
   }
   return mapa;
@@ -964,13 +975,12 @@ function _lerFormasManuais(ss) {
   if (cWpp < 0 || cItem < 0 || cForma < 0) return mapa;
   for (var r = 1; r < dados.length; r++) {
     var row = dados[r];
-    var wpp = String(row[cWpp] || "").replace(/\D/g, "").replace(/^55/, "");
-    if (wpp.length > 8) wpp = wpp.slice(-8);
+    var wpp = _normalizarWpp(row[cWpp]);
     var item  = String(row[cItem]  || "").trim();
     var vu    = String(row[cVU]    || "").replace(/[^0-9,\.]/g,"").replace(",",".");
     var forma = String(row[cForma] || "").trim();
     if (!wpp || !item || !forma) continue;
-    var chave = wpp + "|" + item + "|" + vu;
+    var chave = _chaveItem(wpp, item);
     mapa[chave] = forma;
   }
   return mapa;
@@ -1241,7 +1251,7 @@ function _atualizarClientesSimplificado(ss, stats) {
     var s = stats[chave];
     totalGeral += s.total;
     pagoGeral  += s.pago;
-    var obsKey = s.wpp.replace(/\D/g,"") || _normalizarPg(s.nome);
+    var obsKey = _normalizarWpp(s.wpp) || _normalizarPg(s.nome);
     if (obsKey.length>=12 && obsKey.substring(0,2)==="55") obsKey = obsKey.substring(2);
     var obs = obsClienteAntigo[obsKey] || "";
     linhas.push([s.nome, s.wpp, s.itens.join(" | "), s.total, s.pago, s.pendente, s.status, obs]);
