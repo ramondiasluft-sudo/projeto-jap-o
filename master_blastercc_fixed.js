@@ -314,7 +314,7 @@ function aoEditar(e) {
         var wppPed  = _normalizarWpp(dadosPed[i][colWpp]);
         var prodPed = dadosPed[i][colProd] ? dadosPed[i][colProd].toString().toLowerCase() : "";
         // remover "- R$ xx,xx" e emojis para comparar com itemPag
-        var prodNorm = prodPed.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/^[^\w\u00C0-\u024F]+/u,"").trim();
+        var prodNorm = prodPed.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/^[^a-zA-Z0-9_\u00C0-\u024F]+/,"").trim();
         var qtdPed   = colQtd > -1 ? (parseInt(dadosPed[i][colQtd]) || 1) : 1;
 
         if (wppPed === wppPag && qtdPed === qtdPag && _stripPrice(prodNorm) === _stripPrice(itemPag)) {
@@ -444,7 +444,7 @@ function _mapColsCatalogo(cab) {
 // Catálogo (que nunca tem esse prefixo).
 function _nomeCompletoDoTextoPedido(produtoVariacaoTexto) {
   var semPreco = produtoVariacaoTexto.replace(/\s*-?\s*R\$\s*[\d.,]+\s*$/, "").trim();
-  return semPreco.replace(/^[^\p{L}\p{N}]+/u, "").trim();
+  return semPreco.replace(/^[^a-zA-Z0-9À-ɏ]+/, "").trim();
 }
 
 // Retorna o limite de unidades que um cliente pode pedir de um produto,
