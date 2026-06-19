@@ -371,9 +371,11 @@ function aoEditar(e) {
         var colProdP  = acharCol(cabPed2, ["produto", "varia"]);
         var colQtdP   = acharCol(cabPed2, ["quantid"]);
 
+        var colNomeP = acharCol(cabPed2, ["nome"]);
         var wppPed2  = colWppP  > -1 ? dadosPed2[colWppP].toString().replace(/\D/g,"").slice(-8)  : "";
+        var nomePed2 = colNomeP > -1 ? _normalizarPg(dadosPed2[colNomeP].toString()) : "";
         var prodPed2 = colProdP > -1 ? dadosPed2[colProdP].toString().toLowerCase() : "";
-        prodPed2 = prodPed2.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/^[^\w\u00C0-\u024F]+/u,"").trim();
+        prodPed2 = prodPed2.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/\s+/g," ").trim();
         var qtdPed2  = colQtdP  > -1 ? (parseInt(dadosPed2[colQtdP]) || 1) : 1;
 
         var stNovo = val;
@@ -382,34 +384,26 @@ function aoEditar(e) {
         else if (stNovo.indexOf("Enviado")   > -1) stNovo = "📦 Enviado";
         else                                        stNovo = "🟡 Pendente";
 
-        // Procurar linha em Pagamentos (WPP + produto + qtd)
+        // Procurar linha em Pagamentos:
+        // Tentativa 1 (precisa): WPP + produto + qtd
+        // Tentativa 2 (fallback): nome normalizado + produto  ← tolera WPP com typo
         var dadosPag2 = abaPag2.getDataRange().getValues();
+        var matchIdx = -1;
         for (var k = 1; k < dadosPag2.length; k++) {
           var wppPag2  = dadosPag2[k][1] ? dadosPag2[k][1].toString().replace(/\D/g,"").slice(-8) : "";
+          var nomePag2 = _normalizarPg(dadosPag2[k][0] ? dadosPag2[k][0].toString() : "");
           var itemPag2 = dadosPag2[k][2] ? dadosPag2[k][2].toString().toLowerCase() : "";
           var qtdPag2  = parseInt(dadosPag2[k][3]) || 1;
+          var prodMatch = _stripPrice(itemPag2) === _stripPrice(prodPed2);
+          if (wppPag2 === wppPed2 && qtdPag2 === qtdPed2 && prodMatch) { matchIdx = k; break; }
+          if (matchIdx === -1 && nomePag2 === nomePed2 && prodMatch) matchIdx = k;
+        }
 
-          if (wppPag2 === wppPed2 && qtdPag2 === qtdPed2 && _stripPrice(itemPag2) === _stripPrice(prodPed2)) {
-            var cellStPag2 = abaPag2.getRange(k+1, 9);
-            cellStPag2.setValue(stNovo);
-            if      (stNovo.indexOf("Pago")      > -1) cellStPag2.setBackground("#C8E6C9").setFontColor("#1B5E20").setFontWeight("bold");
-            else if (stNovo.indexOf("Cancelado") > -1) cellStPag2.setBackground("#FFCDD2").setFontColor("#B71C1C").setFontWeight("bold");
-            else if (stNovo.indexOf("Enviado")   > -1) cellStPag2.setBackground("#BBDEFB").setFontColor("#0D47A1").setFontWeight("bold");
-            else                                        cellStPag2.setBackground("#FFF9C4").setFontColor("#8A6D00").setFontWeight("bold");
-            // Atualizar Pago/Pendente em Pagamentos
-            var totalPag2 = parseFloat(dadosPag2[k][4]) || 0;
-            if (stNovo.indexOf("Pago") > -1) {
-              abaPag2.getRange(k+1, 6).setValue(totalPag2); // Pago = total
-              abaPag2.getRange(k+1, 7).setValue(0);          // Pendente = 0
-            } else if (stNovo.indexOf("Cancelado") > -1) {
-              abaPag2.getRange(k+1, 6).setValue(0);
-              abaPag2.getRange(k+1, 7).setValue(0);          // Cancelado = 0 em ambos
-            } else {
-              abaPag2.getRange(k+1, 6).setValue(0);
-              abaPag2.getRange(k+1, 7).setValue(totalPag2); // Pendente = total
-            }
-            break;
-          }
+        if (matchIdx > -1) {
+          _aplicarStatusPagamentos(abaPag2, matchIdx, stNovo, dadosPag2[matchIdx][4]);
+          Logger.log("✅ Sync Pedidos→Pagamentos: linha " + (matchIdx+1) + " | " + stNovo);
+        } else {
+          Logger.log("⚠️ Sync falhou: WPP=" + wppPed2 + " nome=" + nomePed2 + " prod=" + prodPed2.substring(0,30));
         }
       } catch(errPag) { Logger.log("Erro sync Pedidos→Pagamentos: " + errPag.message); }
     }
@@ -831,6 +825,97 @@ function _lerPagosManuais(ss) {
     pagos[chave] = valor;
   }
   return pagos;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Aplica status + cores + Pago/Pendente em uma linha da aba Pagamentos.
+// row1indexed = índice base-0 na array de valores + 1 para getRange.
+function _aplicarStatusPagamentos(abaPag, rowIdx, stNovo, aPagar) {
+  var totalPag = parseFloat(String(aPagar).replace(/[^0-9.,]/g,"").replace(",",".")) || 0;
+  var cellSt = abaPag.getRange(rowIdx + 1, 9);
+  cellSt.setValue(stNovo);
+  if      (stNovo.indexOf("Pago")      > -1) cellSt.setBackground("#C8E6C9").setFontColor("#1B5E20").setFontWeight("bold");
+  else if (stNovo.indexOf("Cancelado") > -1) cellSt.setBackground("#FFCDD2").setFontColor("#B71C1C").setFontWeight("bold");
+  else if (stNovo.indexOf("Enviado")   > -1) cellSt.setBackground("#BBDEFB").setFontColor("#0D47A1").setFontWeight("bold");
+  else                                        cellSt.setBackground("#FFF9C4").setFontColor("#8A6D00").setFontWeight("bold");
+  if (stNovo.indexOf("Pago") > -1) {
+    abaPag.getRange(rowIdx + 1, 6).setValue(totalPag);
+    abaPag.getRange(rowIdx + 1, 7).setValue(0);
+  } else if (stNovo.indexOf("Cancelado") > -1) {
+    abaPag.getRange(rowIdx + 1, 6).setValue(0);
+    abaPag.getRange(rowIdx + 1, 7).setValue(0);
+  } else {
+    abaPag.getRange(rowIdx + 1, 6).setValue(0);
+    abaPag.getRange(rowIdx + 1, 7).setValue(totalPag);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sincroniza TODOS os status de "Pedidos do Site" → "Pagamentos" em lote.
+// Use quando o aoEditar falhar ou após qualquer edição manual em massa.
+// NÃO sobrescreve Pago/Obs inseridos manualmente em Pagamentos.
+function sincronizarStatusParaPagamentos() {
+  var ss      = SpreadsheetApp.openById(PLANILHA_ID);
+  var abaPed  = ss.getSheetByName(ABA_PEDIDOS_SITE);
+  var abaPag  = ss.getSheetByName("Pagamentos");
+  if (!abaPed || !abaPag) { Logger.log("⚠️ Aba não encontrada."); return; }
+
+  var dadosPed = abaPed.getDataRange().getValues();
+  var dadosPag = abaPag.getDataRange().getValues();
+  var cabPed   = dadosPed[0];
+  var colWppP  = acharCol(cabPed, ["whatsapp"]);
+  var colProdP = acharCol(cabPed, ["produto", "varia"]);
+  var colQtdP  = acharCol(cabPed, ["quantid"]);
+  var colNomeP = acharCol(cabPed, ["nome"]);
+  var colStP   = acharCol(cabPed, ["status"]);
+  if (colStP === -1) { Logger.log("⚠️ Coluna Status não encontrada em Pedidos do Site."); return; }
+
+  var atualizados = 0;
+  var naoEncontrados = [];
+
+  for (var i = 1; i < dadosPed.length; i++) {
+    var stPed   = String(dadosPed[i][colStP] || "").trim();
+    if (!stPed) continue;
+    var stNovo;
+    if      (stPed.indexOf("Pago")      > -1) stNovo = "✅ Pago";
+    else if (stPed.indexOf("Cancelado") > -1) stNovo = "❌ Cancelado";
+    else if (stPed.indexOf("Enviado")   > -1) stNovo = "📦 Enviado";
+    else                                       stNovo = "🟡 Pendente";
+
+    var wppPed  = colWppP  > -1 ? dadosPed[i][colWppP].toString().replace(/\D/g,"").slice(-8)  : "";
+    var nomePed = colNomeP > -1 ? _normalizarPg(dadosPed[i][colNomeP].toString()) : "";
+    var prodPed = colProdP > -1 ? dadosPed[i][colProdP].toString().toLowerCase() : "";
+    prodPed = prodPed.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").replace(/\s+/g," ").trim();
+    var qtdPed  = colQtdP  > -1 ? (parseInt(dadosPed[i][colQtdP]) || 1) : 1;
+
+    var matchIdx = -1;
+    for (var k = 1; k < dadosPag.length; k++) {
+      var wppPag  = dadosPag[k][1] ? dadosPag[k][1].toString().replace(/\D/g,"").slice(-8) : "";
+      var nomePag = _normalizarPg(dadosPag[k][0] ? dadosPag[k][0].toString() : "");
+      var itemPag = dadosPag[k][2] ? dadosPag[k][2].toString().toLowerCase() : "";
+      var qtdPag  = parseInt(dadosPag[k][3]) || 1;
+      var prodOk  = _stripPrice(itemPag) === _stripPrice(prodPed);
+      if (wppPag === wppPed && qtdPag === qtdPed && prodOk) { matchIdx = k; break; }
+      if (matchIdx === -1 && nomePag === nomePed && prodOk) matchIdx = k;
+    }
+
+    if (matchIdx > -1) {
+      var stAtual = String(dadosPag[matchIdx][8] || "").trim();
+      // Não sobrescreve status manual se já está Pago/Cancelado e Pedidos diz Pendente
+      var naoRegredir = (stAtual.indexOf("Pago") > -1 || stAtual.indexOf("Cancelado") > -1)
+                        && stNovo === "🟡 Pendente";
+      if (!naoRegredir) {
+        _aplicarStatusPagamentos(abaPag, matchIdx, stNovo, dadosPag[matchIdx][4]);
+        dadosPag[matchIdx][8] = stNovo; // atualiza cache local para evitar duplo-match
+        atualizados++;
+      }
+    } else {
+      naoEncontrados.push("linha " + (i+1) + ": " + (nomePed || wppPed) + " | " + prodPed.substring(0,25));
+    }
+  }
+
+  Logger.log("✅ sincronizarStatusParaPagamentos: " + atualizados + " linha(s) atualizada(s).");
+  if (naoEncontrados.length) Logger.log("⚠️ Não encontrados (" + naoEncontrados.length + "):\n" + naoEncontrados.join("\n"));
 }
 
 function _lerStatusManuais(ss) {
