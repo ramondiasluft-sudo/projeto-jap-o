@@ -23,6 +23,7 @@
  *  2. configurarTudo()            — UMA VEZ após migrar, ativa os gatilhos
  *
  *  FUNÇÕES DE USO RECORRENTE:
+ *  - gerarCobrancas()             — agrupa pendências por cliente e escreve mensagem WhatsApp pronta na aba COBRANÇAS
  *  - recalcularTodos()            — força recálculo de toda a aba (use se algo ficar fora de sincronia)
  *  - reconciliarEstoque()         — audita e corrige estoque do Catálogo com base nos pedidos ativos
  *  - resumo()                     — imprime totais no log (Execuções → ver logs)
@@ -363,6 +364,128 @@ function reconciliarEstoque() {
   Logger.log("✅ Reconciliação: " + ajustes.length + " produto(s) ajustado(s)");
   ajustes.forEach(function(a) { Logger.log("  " + a); });
   if (!ajustes.length) Logger.log("(nada a ajustar)");
+}
+
+// ════════════════════════════════════════════════════════════════
+//  GERAR COBRANÇAS — agrupa pedidos por cliente e monta mensagem
+//  pronta para copiar e colar no WhatsApp.
+//  Resultado escrito na aba "COBRANÇAS" (criada/atualizada automaticamente).
+//  Só inclui clientes com valor PENDENTE > 0 e status ≠ Cancelado.
+// ════════════════════════════════════════════════════════════════
+function gerarCobrancas() {
+  var ss  = SpreadsheetApp.openById(ID_PLANILHA);
+  var aba = ss.getSheetByName(ABA_PEDIDOS);
+  if (!aba || aba.getLastRow() < 2) { Logger.log("Aba de pedidos vazia."); return; }
+
+  var dados = aba.getRange(2, 1, aba.getLastRow() - 1, N_COLS).getValues();
+
+  // ── 1. Agrupar por WhatsApp ────────────────────────────────────
+  var clientes = {}; // wpp → {nome, wpp, itens:[{prod,qtd,total,pago,pend,status}], totalGeral, pagoGeral, pendGeral}
+  dados.forEach(function(r) {
+    var st = r[C.STATUS - 1].toString();
+    if (st.indexOf("Cancelado") > -1) return; // ignora cancelados
+
+    var wpp   = r[C.WPP     - 1].toString().trim();
+    var nome  = r[C.NOME    - 1].toString().trim();
+    var prod  = r[C.PRODUTO - 1].toString().trim();
+    var qtd   = parseInt(r[C.QTD   - 1]) || 1;
+    var total = _num(r[C.TOTAL - 1]);
+    var pago  = _num(r[C.PAGO  - 1]);
+    var pend  = _num(r[C.PEND  - 1]);
+
+    if (!wpp) return;
+    if (!clientes[wpp]) {
+      clientes[wpp] = { nome: nome, wpp: wpp, itens: [], totalGeral: 0, pagoGeral: 0, pendGeral: 0 };
+    }
+    clientes[wpp].itens.push({ prod: prod, qtd: qtd, total: total, pago: pago, pend: pend, status: st });
+    clientes[wpp].totalGeral += total;
+    clientes[wpp].pagoGeral  += pago;
+    clientes[wpp].pendGeral  += pend;
+  });
+
+  // ── 2. Filtrar só quem tem pendência ──────────────────────────
+  var linhas = [[
+    "Nome", "WhatsApp", "Total (R$)", "💵 Pago (R$)", "📍 Pendente (R$)", "Mensagem WhatsApp"
+  ]];
+
+  var totalCobrancas = 0;
+  Object.keys(clientes).sort(function(a, b) {
+    return clientes[a].nome.localeCompare(clientes[b].nome);
+  }).forEach(function(wpp) {
+    var cli = clientes[wpp];
+    if (cli.pendGeral < 0.01) return; // sem pendência, pula
+
+    totalCobrancas += cli.pendGeral;
+
+    // ── 3. Montar mensagem ───────────────────────────────────────
+    var primeiroNome = cli.nome.split(" ")[0];
+    var msg = "Olá, " + primeiroNome + "! 🌸\n";
+    msg += "Tudo bem? Aqui é a Coisinhas do Japão!\n\n";
+    msg += "Segue o resumo dos seus pedidos:\n\n";
+
+    cli.itens.forEach(function(it) {
+      // Nome do produto sem preço
+      var nomeProd = _nomeSemPreco(it.prod);
+      var linha = "• " + nomeProd;
+      if (it.qtd > 1) linha += " ×" + it.qtd;
+      linha += " — R$ " + it.total.toFixed(2).replace(".", ",");
+      if (it.pago > 0 && it.pend > 0) {
+        linha += " *(falta R$ " + it.pend.toFixed(2).replace(".", ",") + ")*";
+      } else if (it.pago >= it.total - 0.01) {
+        linha += " ✅";
+      }
+      msg += linha + "\n";
+    });
+
+    msg += "\n";
+    if (cli.pagoGeral > 0.01) {
+      msg += "✅ Pago: R$ " + cli.pagoGeral.toFixed(2).replace(".", ",") + "\n";
+    }
+    msg += "📍 *Pendente: R$ " + cli.pendGeral.toFixed(2).replace(".", ",") + "*\n\n";
+    msg += "Você pode pagar via Pix 😊\n";
+    msg += "Qualquer dúvida é só falar! 🇯🇵";
+
+    linhas.push([cli.nome, cli.wpp, cli.totalGeral, cli.pagoGeral, cli.pendGeral, msg]);
+  });
+
+  // ── 4. Escrever aba COBRANÇAS ──────────────────────────────────
+  var abaCob = ss.getSheetByName("COBRANÇAS") || ss.insertSheet("COBRANÇAS");
+  abaCob.clearContents();
+  abaCob.clearFormats();
+
+  if (linhas.length < 2) {
+    abaCob.getRange(1, 1).setValue("✅ Nenhuma cobrança pendente!");
+    Logger.log("✅ Nenhuma cobrança pendente.");
+    return;
+  }
+
+  abaCob.getRange(1, 1, linhas.length, 6).setValues(linhas);
+
+  // Formatação
+  abaCob.getRange(1, 1, 1, 6)
+    .setBackground("#1A1410").setFontColor("#C9A84C").setFontWeight("bold").setFontSize(11);
+  abaCob.getRange(2, 3, linhas.length - 1, 3).setNumberFormat("R$ #,##0.00");
+
+  // Cor por pendência
+  for (var i = 2; i <= linhas.length; i++) {
+    abaCob.getRange(i, 1, 1, 5).setBackground(i % 2 === 0 ? "#FFFFFF" : "#F5EFE6");
+  }
+
+  // Larguras
+  abaCob.setColumnWidth(1, 180); // Nome
+  abaCob.setColumnWidth(2, 140); // WhatsApp
+  abaCob.setColumnWidth(3, 110); // Total
+  abaCob.setColumnWidth(4, 110); // Pago
+  abaCob.setColumnWidth(5, 110); // Pendente
+  abaCob.setColumnWidth(6, 500); // Mensagem
+
+  // Quebra de linha automática na coluna Mensagem
+  abaCob.getRange(2, 6, linhas.length - 1, 1).setWrap(true);
+
+  abaCob.setFrozenRows(1);
+
+  Logger.log("✅ COBRANÇAS: " + (linhas.length - 1) + " clientes | Total pendente: R$ " +
+             totalCobrancas.toFixed(2).replace(".", ","));
 }
 
 // ════════════════════════════════════════════════════════════════
