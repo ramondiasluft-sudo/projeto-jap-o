@@ -133,9 +133,17 @@ function calcularAbas() {
 function migrarParaAbaUnificada() {
   var ss     = SpreadsheetApp.openById(ID_PLANILHA);
   var abaPed = ss.getSheetByName(ABA_PEDIDOS);
-  var abaPag = ss.getSheetByName("Pagamentos");
 
   if (!abaPed) { Logger.log("❌ Aba 'Pedidos do Site' não encontrada."); return; }
+
+  // Procura aba Pagamentos — aceita o nome original OU qualquer backup gerado por migração anterior
+  var abaPag = ss.getSheetByName("Pagamentos");
+  if (!abaPag) {
+    ss.getSheets().forEach(function(s) {
+      if (!abaPag && s.getName().indexOf("Pagamentos_bkp_") === 0) abaPag = s;
+    });
+    if (abaPag) Logger.log("⚠️ Aba 'Pagamentos' não encontrada. Usando backup: " + abaPag.getName());
+  }
 
   // ── 1. Ler Pagamentos e montar mapa por chave ─────────────────
   var mapaPag = {}; // chave → {pago, forma, status, obs}
@@ -166,7 +174,10 @@ function migrarParaAbaUnificada() {
         mapaPag[ch] = { pago: pago, forma: forma, status: stt, obs: obs };
       }
     }
-    Logger.log("Pagamentos mapeados: " + Object.keys(mapaPag).length + " entradas");
+    var comObs = Object.keys(mapaPag).filter(function(k){ return mapaPag[k].obs !== ""; }).length;
+    Logger.log("Pagamentos mapeados: " + Object.keys(mapaPag).length + " entradas | Com observação: " + comObs);
+  } else {
+    Logger.log("⚠️ Nenhuma aba de Pagamentos encontrada. Obs de Pagamentos não serão importadas.");
   }
 
   // ── 2. Processar Pedidos do Site ──────────────────────────────
@@ -177,6 +188,7 @@ function migrarParaAbaUnificada() {
   var iWppD = _col(cabD, ["whatsapp", "wpp"]);
   var iQtd  = _col(cabD, ["quantid"]);
   var iObsF = _col(cabD, ["observa"]);
+  Logger.log("Coluna Observações em Pedidos do Site: índice " + iObsF + " (coluna " + (iObsF > -1 ? String.fromCharCode(65+iObsF) : "NÃO ENCONTRADA") + ")");
   var iVU   = _col(cabD, ["valor unit"]);
   var iTot  = _col(cabD, ["total"]);
   var iSttD = _col(cabD, ["status"]);
@@ -233,16 +245,20 @@ function migrarParaAbaUnificada() {
     ]);
   }
 
+  var comObsFinal = linhas.slice(1).filter(function(l){ return l[5] !== ""; }).length;
   Logger.log("Pedidos: " + (linhas.length - 1) +
              " | Cruzados com Pagamentos: " + cruzados +
-             " | Sem cruzamento: " + semCruz);
+             " | Sem cruzamento: " + semCruz +
+             " | Com observação preservada: " + comObsFinal);
 
   // ── 4. Backup de Pagamentos (renomeia, não apaga) ─────────────
-  if (abaPag) {
+  if (abaPag && abaPag.getName() === "Pagamentos") {
     var bkp = "Pagamentos_bkp_" +
       Utilities.formatDate(new Date(), "America/Sao_Paulo", "ddMMyy_HHmm");
     abaPag.setName(bkp);
     Logger.log("📦 Backup criado: '" + bkp + "' — pode apagar após conferir");
+  } else if (abaPag) {
+    Logger.log("📦 Backup '" + abaPag.getName() + "' mantido sem alteração.");
   }
 
   // ── 5. Reescrever aba ─────────────────────────────────────────
