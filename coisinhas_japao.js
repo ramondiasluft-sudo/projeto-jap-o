@@ -10,14 +10,13 @@
  *  C  Nome completo        (form)
  *  D  WhatsApp             (form, formatado automático)
  *  E  Quantidade           (form)
- *  F  Obs. do pedido       (form)
+ *  F  Observações          ← campo livre (notas do pedido, pagamento, entrega…)
  *  G  Valor Unit (R$)      ← calculado do nome do produto
  *  H  Total (R$)           ← G × E, calculado
  *  I  💵 Pago (R$)         ← você preenche ao receber pagamento
  *  J  📍 Pendente (R$)     ← H − I, automático
  *  K  Forma de Pagamento   ← dropdown: Pix / Cartão / Dinheiro / Outro
  *  L  ✅ Status            ← automático via Pago, pode ser sobrescrito
- *  M  Observação           ← campo livre
  *
  *  FUNÇÕES PARA EXECUTAR:
  *  1. migrarParaAbaUnificada()    — UMA VEZ, faz a migração preservando dados manuais
@@ -37,10 +36,10 @@ var MAX_POR_ITEM = 5; // máximo de unidades do mesmo produto por cliente
 
 // Índices das colunas (1-indexed para getRange, use −1 para arrays)
 var C = {
-  DATA: 1, PRODUTO: 2, NOME: 3, WPP: 4, QTD: 5, OBS_PED: 6,
-  VU: 7, TOTAL: 8, PAGO: 9, PEND: 10, FORMA: 11, STATUS: 12, OBS: 13
+  DATA: 1, PRODUTO: 2, NOME: 3, WPP: 4, QTD: 5, OBS: 6,
+  VU: 7, TOTAL: 8, PAGO: 9, PEND: 10, FORMA: 11, STATUS: 12
 };
-var N_COLS = 13;
+var N_COLS = 12;
 
 // ════════════════════════════════════════════════════════════════
 //  CONFIGURAÇÃO — execute UMA VEZ após migrar
@@ -186,10 +185,10 @@ function migrarParaAbaUnificada() {
   // ── 3. Montar linhas novas ─────────────────────────────────────
   var linhas = [[
     "Carimbo de data/h", "Produto / Variação", "Nome completo",
-    "WhatsApp", "Quantidade", "Obs. do pedido",
+    "WhatsApp", "Quantidade", "Observações",
     "Valor Unit (R$)", "Total (R$)",
     "💵 Pago (R$)", "📍 Pendente (R$)", "Forma de Pagamento",
-    "✅ Status", "Observação"
+    "✅ Status"
   ]];
 
   var cruzados = 0, semCruz = 0;
@@ -213,6 +212,8 @@ function migrarParaAbaUnificada() {
     var pago   = pg ? pg.pago  : 0;
     var forma  = pg ? pg.forma : "";
     var obsP   = pg ? pg.obs   : "";
+    // Mescla obs do formulário + obs manual de Pagamentos em campo único
+    var obs    = [obsF, obsP].filter(function(o){ return o !== ""; }).join(" | ");
     var stPag  = pg ? pg.status : "";
     var stPed  = iSttD > -1 ? row[iSttD].toString().trim() : "";
 
@@ -227,8 +228,8 @@ function migrarParaAbaUnificada() {
     if (pg) cruzados++; else semCruz++;
 
     linhas.push([
-      data, prod, nome, _fmtWpp(wpp), qtd, obsF,
-      vu, total, pago, Math.max(total - pago, 0), forma, status, obsP
+      data, prod, nome, _fmtWpp(wpp), qtd, obs,
+      vu, total, pago, Math.max(total - pago, 0), forma, status
     ]);
   }
 
@@ -514,15 +515,14 @@ function _formatarAba(aba, nLinhas) {
   aba.setColumnWidth(C.PRODUTO, 350);
   aba.setColumnWidth(C.NOME,    180);
   aba.setColumnWidth(C.WPP,     130);
-  aba.setColumnWidth(C.QTD,      60);
-  aba.setColumnWidth(C.OBS_PED, 160);
-  aba.setColumnWidth(C.VU,      110);
+  aba.setColumnWidth(C.QTD,    60);
+  aba.setColumnWidth(C.OBS,   220);
+  aba.setColumnWidth(C.VU,    110);
   aba.setColumnWidth(C.TOTAL,   110);
-  aba.setColumnWidth(C.PAGO,    110);
-  aba.setColumnWidth(C.PEND,    110);
-  aba.setColumnWidth(C.FORMA,   120);
-  aba.setColumnWidth(C.STATUS,  140);
-  aba.setColumnWidth(C.OBS,     200);
+  aba.setColumnWidth(C.PAGO,   110);
+  aba.setColumnWidth(C.PEND,   110);
+  aba.setColumnWidth(C.FORMA,  120);
+  aba.setColumnWidth(C.STATUS, 140);
 
   aba.setFrozenRows(1);
   aba.setFrozenColumns(3); // congela Data, Produto, Nome
@@ -566,10 +566,17 @@ function _nomeSemPreco(texto) {
               .replace(/^[^a-zA-Z0-9À-ɏ]+/, "").trim();
 }
 
-// Converte valor de célula para número
+// Converte valor de célula para número.
+// Suporta formato BR (1.234,56) e US/planilha (1234.56 ou 35.00).
 function _num(v) {
   if (typeof v === "number") return v;
-  return parseFloat(String(v || "").replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+  var s = String(v || "").replace(/[R$\s]/g, ""); // remove símbolo e espaços
+  if (s.indexOf(",") > -1) {
+    // Formato BR: ponto = milhar, vírgula = decimal
+    s = s.replace(/\./g, "").replace(",", ".");
+  }
+  // Se só tem ponto (formato US ou número puro), parseFloat lida corretamente
+  return parseFloat(s) || 0;
 }
 
 // Formata WhatsApp: XX XXXXX-XXXX
