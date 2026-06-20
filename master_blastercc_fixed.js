@@ -251,8 +251,20 @@ function _normalizarWpp(wpp) {
   return d.length > 8 ? d.slice(-8) : d;
 }
 
+// Normaliza acentos para comparação robusta (Ácido == Acido, etc.)
+function _normalizarAcentos(s) {
+  return String(s || "")
+    .replace(/[áàãâä]/gi, "a")
+    .replace(/[éèêë]/gi, "e")
+    .replace(/[íìîï]/gi, "i")
+    .replace(/[óòõôö]/gi, "o")
+    .replace(/[úùûü]/gi, "u")
+    .replace(/[ç]/gi, "c")
+    .replace(/[ñ]/gi, "n");
+}
+
 function _chaveItem(wpp, produto) {
-  return _normalizarWpp(wpp) + "|" + _stripPrice(String(produto || "").toLowerCase());
+  return _normalizarWpp(wpp) + "|" + _normalizarAcentos(_stripPrice(String(produto || "").toLowerCase()));
 }
 
 function aoEditar(e) {
@@ -634,11 +646,10 @@ function gerarAbaPagamentos() {
     // Distribuir o valor recebido pelos itens do cliente (proporcional ao total, ordem do pedido)
     var restante = totalRecebido;
     cli.itens.forEach(function(it) {
-      // Build consistent 8-digit wpp key
       var wppKeyIt = (it.wppKey || "").length > 8 ? (it.wppKey || "").slice(-8) : (it.wppKey || "");
-      var vuStr = String(it.vu || "").replace(/[^0-9,\.]/g,"").replace(",",".");
-      var chaveItemStatus = wppKeyIt + "|" + it.item + "|" + vuStr;
-      // Legacy key without VU (for obsAntigas which still uses old key format)
+      // Chave correta: mesma que _lerPagosManuais/_lerStatusManuais/_lerFormasManuais usam
+      var chaveIt = _chaveItem(wppKeyIt, it.item);
+      // Legacy key (obsAntigas ainda usa formato antigo)
       var chaveItem = chaveCli + "|" + it.item;
 
       var pagoItem;
@@ -646,9 +657,9 @@ function gerarAbaPagamentos() {
       if (it.statusOriginal && (it.statusOriginal.indexOf("Pago") > -1 || it.statusOriginal.indexOf("✅") > -1)) {
         pagoItem = it.total;
         restante = Math.max(restante - pagoItem, 0);
-      } else if (pagosManuais[chaveItemStatus] !== undefined) {
+      } else if (pagosManuais[chaveIt] !== undefined) {
         // Valor lançado manualmente tem PRIORIDADE — preserva
-        pagoItem = pagosManuais[chaveItemStatus];
+        pagoItem = pagosManuais[chaveIt];
         restante = Math.max(restante - pagoItem, 0);
       } else {
         // Senão, distribui do extrato normalmente
@@ -658,12 +669,11 @@ function gerarAbaPagamentos() {
 
       var obs = obsAntigas[chaveItem] || "";
 
-      // Preservar Status Geral e Forma de Pagamento manuais
-      var statusGeral = "";
-      var statusFinal = statusManuais[chaveItemStatus] || statusGeral;
-      var formaFinal  = formasManuais[chaveItemStatus] || formaPg;
+      // Preservar Status Geral e Forma de Pagamento manuais (mesmo formato de chave dos leitores)
+      var statusFinal = statusManuais[chaveIt] || "";
+      var formaFinal  = formasManuais[chaveIt] || formaPg;
 
-      // Pendente (col G) será preenchido via FÓRMULA depois
+      // Pendente (col G) será preenchido em _escreverAbaPagamentos
       linhas.push([it.nome, it.wpp, it.item, it.qtd, it.total, pagoItem, "", formaFinal, statusFinal, obs]);
 
       totalGeral += it.total;
@@ -858,6 +868,43 @@ function _aplicarStatusPagamentos(abaPag, rowIdx, stNovo, aPagar) {
   } else {
     abaPag.getRange(rowIdx + 1, 6).setValue(0);
     abaPag.getRange(rowIdx + 1, 7).setValue(totalPag);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Diagnóstico: testa o sync do Ramon especificamente e loga detalhes.
+// Execute no Apps Script e veja os logs em Execuções.
+function diagnosticarSync() {
+  var ss     = SpreadsheetApp.openById(PLANILHA_ID);
+  var abaPed = ss.getSheetByName(ABA_PEDIDOS_SITE);
+  var abaPag = ss.getSheetByName("Pagamentos");
+  if (!abaPed || !abaPag) { Logger.log("❌ Aba não encontrada"); return; }
+
+  var cabPed = abaPed.getRange(1,1,1,abaPed.getLastColumn()).getValues()[0];
+  var colWpp  = acharCol(cabPed, ["whatsapp"]);
+  var colProd = acharCol(cabPed, ["produto","varia"]);
+  var colSt   = acharCol(cabPed, ["status"]);
+  Logger.log("Pedidos do Site — colWpp=" + colWpp + " colProd=" + colProd + " colSt=" + colSt);
+
+  var dadosPed = abaPed.getDataRange().getValues();
+  for (var i = 1; i < dadosPed.length; i++) {
+    var wpp  = _normalizarWpp(dadosPed[i][colWpp]);
+    if (wpp !== "81859153") continue; // filtra Ramon
+    var prod = dadosPed[i][colProd] ? dadosPed[i][colProd].toString() : "";
+    var st   = dadosPed[i][colSt]   ? dadosPed[i][colSt].toString()   : "";
+    var prodNorm = _normalizarAcentos(_stripPrice(prod.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").toLowerCase()));
+    Logger.log("PEDIDO linha " + (i+1) + ": wpp=" + wpp + " | prod=" + prod + " | st=" + st);
+    Logger.log("  chave: " + _chaveItem(wpp, prod.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").toLowerCase()));
+
+    var dadosPag = abaPag.getDataRange().getValues();
+    for (var k = 1; k < dadosPag.length; k++) {
+      var wppP = _normalizarWpp(dadosPag[k][1]);
+      if (wppP !== "81859153") continue;
+      var itemP = dadosPag[k][2] ? dadosPag[k][2].toString() : "";
+      Logger.log("PAGAMENTO linha " + (k+1) + ": wppP=" + wppP + " | item=" + itemP);
+      Logger.log("  chave: " + _chaveItem(wppP, itemP));
+      Logger.log("  MATCH: " + (_chaveItem(wpp, prod.replace(/\s*-?\s*r\$\s*[\d.,]+\s*$/i,"").toLowerCase()) === _chaveItem(wppP, itemP)));
+    }
   }
 }
 
@@ -1136,8 +1183,13 @@ function _escreverAbaPagamentos(ss, linhas) {
       pendentes.push([pend]);
       totalPendenteGeral += pend;
 
+      // Se statusFinal já foi definido em gerarAbaPagamentos (manual ou Pedidos do Site), respeita.
+      // Senão, deriva pela aritmética Pago/Pendente.
+      var statusFromLinhas = linhas[r+1][8];
       var status;
-      if (pend <= 0.001) {
+      if (statusFromLinhas && statusFromLinhas !== "") {
+        status = statusFromLinhas;
+      } else if (pend <= 0.001) {
         status = "✅ Pago";
       } else if (pend > 0.001 && Math.abs(pend - aPagar) > 0.001) {
         status = "⚠️ Pago Parcial";
