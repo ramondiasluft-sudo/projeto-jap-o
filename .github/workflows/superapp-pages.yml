@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
@@ -42,3 +44,19 @@ jobs:
           git add -A
           git commit -q -m "Publica superapp de ${GITHUB_SHA::7}"
           git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages:gh-pages
+      # O mesmo build também vai pelo método "GitHub Actions" do Pages. Assim o site
+      # publica qualquer que seja a fonte escolhida em Settings → Pages.
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: superapp/dist
+
+  deploy-actions:
+    needs: publicar
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
