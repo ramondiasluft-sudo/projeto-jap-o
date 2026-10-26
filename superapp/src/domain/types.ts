@@ -82,6 +82,16 @@ export interface AvaliacaoInicial {
   pontosFortes?: string[];
 }
 
+export interface OpcaoRefeicao {
+  descricao: string;
+  proteinaG: number;
+}
+
+export interface Refeicao extends OpcaoRefeicao {
+  refeicao: string;
+  alternativas?: OpcaoRefeicao[];
+}
+
 export interface Protocolo {
   meta: {
     nome: string;
@@ -140,7 +150,9 @@ export interface Protocolo {
     gastoEstimadoKcal: number;
     aguaLitrosDia: number;
     refeicoesComProteina: { quantidade: number; proteinaPorRefeicaoG: [number, number] };
-    diaExemplo: { refeicao: string; descricao: string; proteinaG: number }[];
+    diaExemplo: Refeicao[];
+    trocasCarboidrato?: { referencia: string; equivalentes: string[] };
+    dicas?: string[];
   };
   suplementos: { nome: string; dose: string; frequencia: string }[];
   monitoramento: {
@@ -215,6 +227,8 @@ export type DiaNutricao = {
   creatina: boolean;
   aguaL?: number;
   refeicoes?: boolean[];
+  /** Opção escolhida por refeição: -1 = dia exemplo, 0..n = índice em `alternativas`. */
+  opcoes?: (number | null)[];
 };
 
 export type TipoAjuste = 'kcal+150' | 'kcal-150' | 'passos+2000';

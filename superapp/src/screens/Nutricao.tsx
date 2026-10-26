@@ -4,7 +4,8 @@ import { fmt, lerNumero } from '../components/util';
 import { repo } from '../data/repo';
 import { formatarData, somarDias } from '../domain/datas';
 import { protocolo as P } from '../domain/protocolo';
-import type { DiaNutricao } from '../domain/types';
+import { opcaoDaRefeicao, proteinaDasRefeicoes } from '../domain/nutricao';
+import type { DiaNutricao, OpcaoRefeicao } from '../domain/types';
 import { useDados } from '../state';
 
 export default function Nutricao() {
@@ -22,6 +23,9 @@ export default function Nutricao() {
 
   const salvar = (patch: Partial<DiaNutricao>) => repo.putNutricao({ ...dia, ...patch, data });
   const refeicoes = dia.refeicoes ?? n.diaExemplo.map(() => false);
+  const opcoes = dia.opcoes ?? n.diaExemplo.map(() => null);
+  const [aberta, setAberta] = useState<number | null>(null);
+  const protEstimada = proteinaDasRefeicoes(n.diaExemplo, dia);
   const ultimos = Array.from({ length: 7 }, (_, i) => somarDias(d.hoje, -i)).map((dt) => ({
     data: dt,
     reg: d.nutricao.find((x) => x.data === dt),
@@ -59,22 +63,64 @@ export default function Nutricao() {
             <input className="input num" inputMode="numeric" value={prot} onChange={(e) => setProt(e.target.value)} onBlur={() => salvar({ proteinaG: lerNumero(prot) })} />
           </label>
         </div>
+        {protEstimada > 0 && (
+          <div className="row between small">
+            <span className="muted">Pelas refeições marcadas: <strong className="num">~{protEstimada} g</strong> de {f.proteinaG} g</span>
+            {dia.proteinaG !== protEstimada && (
+              <button className="btn sm" onClick={() => salvar({ proteinaG: protEstimada })}>Usar</button>
+            )}
+          </div>
+        )}
         <div>
-          {n.diaExemplo.map((r, i) => (
-            <div className="check" key={r.refeicao}>
-              <button
-                className={`tick ${refeicoes[i] ? 'on' : ''}`}
-                aria-label={r.refeicao}
-                onClick={() => salvar({ refeicoes: refeicoes.map((v, j) => (j === i ? !v : v)) })}
-              >
-                {refeicoes[i] && <IcCheck />}
-              </button>
-              <div className="grow">
-                <strong>{r.refeicao}</strong> <span className="muted">~{r.proteinaG} g prot.</span>
-                <div className="small muted">{r.descricao}</div>
+          {n.diaExemplo.map((r, i) => {
+            const escolhida = opcaoDaRefeicao(r, opcoes[i]);
+            const total = 1 + (r.alternativas?.length ?? 0);
+            return (
+              <div key={r.refeicao} style={{ borderBottom: '1px solid var(--border)' }}>
+                <div className="check" style={{ borderBottom: 0 }}>
+                  <button
+                    className={`tick ${refeicoes[i] ? 'on' : ''}`}
+                    aria-label={r.refeicao}
+                    onClick={() => salvar({ refeicoes: refeicoes.map((v, j) => (j === i ? !v : v)) })}
+                  >
+                    {refeicoes[i] && <IcCheck />}
+                  </button>
+                  <div className="grow">
+                    <strong>{r.refeicao}</strong> <span className="muted">~{escolhida.proteinaG} g prot.</span>
+                    <div className="small muted">{escolhida.descricao}</div>
+                  </div>
+                  {total > 1 && (
+                    <button className="btn sm" aria-expanded={aberta === i} onClick={() => setAberta(aberta === i ? null : i)}>
+                      Trocar ({total})
+                    </button>
+                  )}
+                </div>
+                {aberta === i && (
+                  <div className="stack" style={{ paddingBottom: 10 }}>
+                    {[r as OpcaoRefeicao, ...(r.alternativas ?? [])].map((o, k) => {
+                      const idx = k - 1; // -1 = dia exemplo
+                      const on = (opcoes[i] ?? -1) === idx;
+                      return (
+                        <button
+                          key={k}
+                          className={`btn block ${on ? 'primary' : ''}`}
+                          style={{ textAlign: 'left', fontWeight: 400, display: 'flex', gap: 8, justifyContent: 'space-between' }}
+                          onClick={() => {
+                            const ops = n.diaExemplo.map((_, j) => (j === i ? idx : opcoes[j] ?? null));
+                            salvar({ opcoes: ops, refeicoes: refeicoes.map((v, j) => (j === i ? true : v)) });
+                            setAberta(null);
+                          }}
+                        >
+                          <span className="small">{idx === -1 ? <strong>Plano: </strong> : null}{o.descricao}</span>
+                          <span className="small num" style={{ whiteSpace: 'nowrap', fontWeight: 700 }}>{o.proteinaG} g</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div className="check">
             <button className={`tick ${dia.creatina ? 'on' : ''}`} aria-label="Creatina" onClick={() => salvar({ creatina: !dia.creatina })}>
               {dia.creatina && <IcCheck />}
@@ -103,6 +149,25 @@ export default function Nutricao() {
           </tbody>
         </table>
       </div>
+
+      {n.trocasCarboidrato && (
+        <div className="card">
+          <h2>Trocas de carboidrato</h2>
+          <p className="muted" style={{ marginTop: 0 }}>Cada item equivale a {n.trocasCarboidrato.referencia}:</p>
+          <div className="row wrap">
+            {n.trocasCarboidrato.equivalentes.map((e) => <span key={e} className="chip">{e}</span>)}
+          </div>
+        </div>
+      )}
+
+      {n.dicas && n.dicas.length > 0 && (
+        <div className="card">
+          <h2>Dicas</h2>
+          <ul className="small" style={{ paddingLeft: 18, margin: 0, color: 'var(--text-2)' }}>
+            {n.dicas.map((d) => <li key={d} style={{ marginBottom: 6 }}>{d}</li>)}
+          </ul>
+        </div>
+      )}
 
       <div className="card">
         <h2>Suplementos</h2>

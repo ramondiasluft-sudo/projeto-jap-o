@@ -165,11 +165,61 @@
     "aguaLitrosDia": 3.5,
     "refeicoesComProteina": { "quantidade": 4, "proteinaPorRefeicaoG": [40, 50] },
     "diaExemplo": [
-      { "refeicao": "Café da manhã", "descricao": "3 ovos mexidos + 2 fatias de pão integral + 1 fruta + café", "proteinaG": 28 },
-      { "refeicao": "Almoço", "descricao": "150 g arroz + 1 concha feijão + 180 g frango ou patinho + salada", "proteinaG": 55 },
-      { "refeicao": "Pré-treino", "descricao": "Iogurte natural/proteico + 40 g aveia + 1 banana", "proteinaG": 25 },
-      { "refeicao": "Jantar (pós-treino)", "descricao": "150 g batata/arroz/macarrão + 180 g carne magra ou peixe + salada", "proteinaG": 50 },
-      { "refeicao": "Ceia", "descricao": "1 dose de whey ou 150 g de cottage", "proteinaG": 28 }
+      { "refeicao": "Café da manhã", "descricao": "3 ovos mexidos + 2 fatias de pão integral + 1 fruta + café", "proteinaG": 28,
+        "alternativas": [
+          { "descricao": "Crepioca: 2 ovos + 2 claras + 2 col. (sopa) de goma de tapioca, recheio de 40 g de frango desfiado + 1 fruta", "proteinaG": 30 },
+          { "descricao": "1 pão francês + 2 ovos mexidos + 2 fatias de peito de peru + 1 fatia de queijo minas + 1 fruta", "proteinaG": 28 },
+          { "descricao": "170 g de iogurte natural desnatado + 1 dose de whey + 30 g de aveia + morangos ou banana", "proteinaG": 33 },
+          { "descricao": "Cuscuz: 160 g de cuscuz cozido + 3 ovos + 200 ml de café com leite desnatado", "proteinaG": 27 },
+          { "descricao": "Panqueca: 1 banana + 2 ovos + 30 g de aveia + ½ dose de whey", "proteinaG": 30 },
+          { "descricao": "1 rap10 integral + 80 g de frango desfiado + 1 col. de requeijão light + tomate", "proteinaG": 30 }
+        ] },
+      { "refeicao": "Almoço", "descricao": "150 g arroz + 1 concha feijão + 180 g frango ou patinho + salada", "proteinaG": 55,
+        "alternativas": [
+          { "descricao": "180 g de patinho moído + 150 g de arroz integral + 1 concha de feijão + salada", "proteinaG": 60 },
+          { "descricao": "220 g de tilápia ou merluza grelhada + 300 g de batata-inglesa cozida + legumes", "proteinaG": 55 },
+          { "descricao": "180 g de frango em cubos + 130 g de macarrão integral com molho de tomate + salada", "proteinaG": 60 },
+          { "descricao": "180 g de alcatra ou coxão mole + 130 g de mandioca cozida + vinagrete", "proteinaG": 58 },
+          { "descricao": "Strogonoff fit: 180 g de frango + 30 g de creme de leite light + 120 g de arroz + salada", "proteinaG": 57 },
+          { "descricao": "200 g de carne de panela (músculo ou lagarto) + 150 g de arroz + lentilha ou grão-de-bico + salada", "proteinaG": 62 }
+        ] },
+      { "refeicao": "Pré-treino", "descricao": "Iogurte natural/proteico + 40 g aveia + 1 banana", "proteinaG": 25,
+        "alternativas": [
+          { "descricao": "2 fatias de pão integral + 80 g de frango desfiado + 1 banana", "proteinaG": 30 },
+          { "descricao": "Shake: 1 dose de whey + 250 ml de leite desnatado + 1 banana + 20 g de aveia", "proteinaG": 35 },
+          { "descricao": "Tapioca (3 col. de goma) com 80 g de frango desfiado ou 2 ovos + 1 clara", "proteinaG": 23 },
+          { "descricao": "220 g de batata-doce + 100 g de frango", "proteinaG": 32 },
+          { "descricao": "1 pão francês + 1 lata de atum em água com 1 col. de requeijão light + 1 fruta", "proteinaG": 32 },
+          { "descricao": "1 iogurte proteico + 30 g de granola sem açúcar + 1 col. de mel + ½ dose de whey", "proteinaG": 30 }
+        ] },
+      { "refeicao": "Jantar (pós-treino)", "descricao": "150 g batata/arroz/macarrão + 180 g carne magra ou peixe + salada", "proteinaG": 50,
+        "alternativas": [
+          { "descricao": "180 g de patinho ou alcatra + 300 g de batata-inglesa + legumes no vapor", "proteinaG": 57 },
+          { "descricao": "220 g de peixe branco + 150 g de arroz + brócolis", "proteinaG": 55 },
+          { "descricao": "Bolonhesa: 130 g de macarrão integral + 180 g de carne moída magra ao molho de tomate", "proteinaG": 60 },
+          { "descricao": "Escondidinho: 200 g de purê de mandioquinha ou aipim + 180 g de frango desfiado ou carne moída", "proteinaG": 55 },
+          { "descricao": "Hambúrguer caseiro: 1 pão de hambúrguer + 180 g de patinho moído (2 discos) + 1 fatia de queijo light + salada", "proteinaG": 58 },
+          { "descricao": "Omelete: 3 ovos + 4 claras + 40 g de queijo minas + legumes, com 2 fatias de pão ou 150 g de batata", "proteinaG": 45 }
+        ] },
+      { "refeicao": "Ceia", "descricao": "1 dose de whey ou 150 g de cottage", "proteinaG": 28,
+        "alternativas": [
+          { "descricao": "1 dose de whey com 200 ml de leite desnatado", "proteinaG": 31 },
+          { "descricao": "Mingau proteico: 200 ml de leite desnatado + 20 g de aveia + ½ dose de whey", "proteinaG": 22 },
+          { "descricao": "1 pote de iogurte proteico ou skyr + 1 col. de chia", "proteinaG": 18 },
+          { "descricao": "150 g de cottage + frutas vermelhas", "proteinaG": 17 },
+          { "descricao": "2 ovos + 2 claras mexidos", "proteinaG": 19 },
+          { "descricao": "2 fatias de pão integral + 80 g de frango desfiado ou 3 fatias de peito de peru", "proteinaG": 22 }
+        ] }
+    ],
+    "trocasCarboidrato": {
+      "referencia": "150 g de arroz cozido (~40 g de carboidrato)",
+      "equivalentes": ["300 g de batata-inglesa", "220 g de batata-doce", "130 g de macarrão cozido", "130 g de mandioca", "160 g de cuscuz", "1½ pão francês", "3 fatias de pão integral"]
+    },
+    "dicas": [
+      "Valores aproximados, carnes pesadas prontas. Cada refeição: proteína + carboidrato (+ salada e legumes à vontade no almoço e jantar).",
+      "150 g de cottage tem ~17 g de proteína: nesses dias, some 2 claras no café ou use 200 g de frango no almoço.",
+      "Gordura (70 g/dia) é o que mais estoura: azeite medido (1 col. de chá no almoço e no jantar); salmão 1–2x por semana no lugar do peixe branco.",
+      "Deload (semanas 13 e 21): mesmas refeições, só mais carboidrato (ex.: +50 g de arroz no almoço e no jantar)."
     ]
   },
 
