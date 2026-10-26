@@ -17,8 +17,9 @@ npm run build      # gera dist/ (PWA instalável, funciona offline)
 npm run preview    # serve o build
 ```
 
-Para instalar no celular, publique `dist/` em qualquer hospedagem HTTPS (GitHub Pages, Netlify,
-Vercel…) e use "Adicionar à tela inicial". O build usa caminhos relativos, então funciona em subpasta.
+**App publicado:** https://ramondiasluft-sudo.github.io/projeto-jap-o/ — abra no celular e use
+"Adicionar à tela inicial". Cada push que mexe em `superapp/` roda os testes, gera o build e atualiza
+a branch `gh-pages` (workflow `.github/workflows/superapp-pages.yml`).
 
 ## Estrutura
 

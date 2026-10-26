@@ -1,5 +1,8 @@
 name: Publicar superapp no GitHub Pages
 
+# Testa, gera o build e grava o resultado na branch gh-pages,
+# que o GitHub Pages serve em https://ramondiasluft-sudo.github.io/projeto-jap-o/
+
 on:
   push:
     branches: [claude/gifted-cray-224hfr, claude/zealous-pasteur-0tp7fi]
@@ -7,20 +10,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  publicar:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: superapp
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,21 +27,18 @@ jobs:
           cache: npm
           cache-dependency-path: superapp/package-lock.json
       - run: npm ci
+        working-directory: superapp
       - run: npm test
+        working-directory: superapp
       - run: npm run build
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: superapp/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+        working-directory: superapp
+      - name: Gravar build na branch gh-pages
+        working-directory: superapp/dist
+        run: |
+          touch .nojekyll
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Publica superapp de ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages:gh-pages
