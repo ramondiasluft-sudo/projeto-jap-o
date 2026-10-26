@@ -27,6 +27,7 @@ a branch `gh-pages` (workflow `.github/workflows/superapp-pages.yml`).
 |---|---|
 | `src/domain/regras.ts` | Regras de negócio como funções puras: semana/fase, treino do dia, séries por fase, deload, dupla progressão, regra do inclinado, dor no ombro, ajuste calórico, resumo da semana 26 |
 | `src/domain/regras.test.ts` | Testes das regras |
+| `src/domain/medidas.ts` | (v2) Linha de base a partir de `avaliacaoInicial`, variação e meta de cada medida, proporções ombro ÷ cintura e cintura ÷ altura, alongamentos por treino |
 | `src/data/repo.ts` | Interface `Repo` + implementação IndexedDB (Dexie), backup/restore em JSON. Para Supabase/Firebase, crie outra implementação da interface |
 | `src/state.tsx` | Carrega os dados e deriva semana, fase, alertas e sugestões |
 | `src/screens/` | Hoje, Treino, Medidas, Progresso, Nutrição, Mais (Protocolo + Configurações) |
@@ -46,3 +47,6 @@ a branch `gh-pages` (workflow `.github/workflows/superapp-pages.yml`).
   aparece uma vez por semana de avaliação; aceitar soma o ajuste à meta de todas as fases seguintes.
 - **Timer de descanso** começa no limite superior da faixa (ex.: 180 s compostos, 90 s isolados).
 - **Fotos** são reduzidas para no máx. 1600 px (JPEG) para o backup não ficar enorme.
+- **Linha de base (v2)**: gravada uma vez, no primeiro acesso (ou ao restaurar um backup antigo), com ids
+  fixos `base-<medida>`. A variação de cada medida é contada a partir dela, mesmo que existam registros
+  de peso anteriores.

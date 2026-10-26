@@ -1,7 +1,7 @@
 {
   "meta": {
     "nome": "Protocolo 6 Meses — Recomposição, Força e Volume",
-    "versao": 1,
+    "versao": 2,
     "duracaoSemanas": 26,
     "diasPorSemana": 5,
     "duracaoTreinoMin": 60,
@@ -11,24 +11,44 @@
       "alturaCm": 181,
       "pesoInicialKg": 93,
       "gorduraInicialPct": 30,
-      "massaMagraInicialKg": 65
+      "massaMagraInicialKg": 65,
+      "gorduraEstimadaVisualPct": [22, 25],
+      "massaMagraEstimadaVisualKg": 70,
+      "observacoes": [
+        "Dor no ombro esquerdo (supino inclinado e desenvolvimento)",
+        "Dor no joelho aliviada com cadeira extensora leve como aquecimento",
+        "Pegada fraca"
+      ]
     },
     "metas": {
-      "seisMeses": { "pesoKg": [90, 94], "gorduraPct": [20, 22], "massaMagraKg": [71, 73], "reducaoCinturaCm": [6, 9] },
+      "seisMeses": {
+        "pesoKg": [90, 94],
+        "gorduraPct": [20, 22],
+        "massaMagraKg": [71, 73],
+        "reducaoCinturaCm": [6, 9],
+        "cinturaCm": [85, 87],
+        "barrigaCm": [87, 89],
+        "ombroCm": [128, 130],
+        "peitoCm": [104, 106],
+        "bracoCm": [40, 41],
+        "quadrilCm": [100, 102],
+        "ombroCinturaRazao": 1.51,
+        "cinturaAlturaRazao": 0.47
+      },
       "longoPrazo": { "pesoKg": 100, "gorduraPct": [12, 15], "massaMagraKg": [85, 88] }
     }
   },
 
   "fases": [
-    { "id": "f1",  "nome": "Adaptação",           "semanas": [1, 4],   "foco": "Técnica, reabilitar ombro, testar cargas",                    "rir": "3",   "kcal": 2350, "proteinaG": 185, "gorduraG": 70, "carboG": 245, "passosMeta": 8000,  "cardio": null,                            "ritmoPesoKgSem": [-0.5, -0.3] },
-    { "id": "f2a", "nome": "Recomposição A",      "semanas": [5, 8],   "foco": "Hipertrofia 8–12 reps",                                       "rir": "1-2", "kcal": 2300, "proteinaG": 190, "gorduraG": 70, "carboG": 240, "passosMeta": 9000,  "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [-0.5, -0.3] },
-    { "id": "f2b", "nome": "Recomposição B",      "semanas": [9, 12],  "foco": "Hipertrofia + 1 série nos grupos-alvo",                       "rir": "1-2", "kcal": 2250, "proteinaG": 190, "gorduraG": 70, "carboG": 225, "passosMeta": 10000, "cardio": { "sessoes": 3, "minutos": 25 }, "ritmoPesoKgSem": [-0.5, -0.3], "seriesExtras": ["puxada_frente_aberta", "elevacao_lateral_halter", "elevacao_lateral_cabo", "peito_superior"] },
-    { "id": "d1",  "nome": "Deload",              "semanas": [13, 13], "foco": "Metade das séries, -20% de carga",                            "rir": "4",   "kcal": 2600, "proteinaG": 190, "gorduraG": 70, "carboG": 300, "passosMeta": 8000,  "cardio": null, "deload": true },
-    { "id": "f3a", "nome": "Força A",             "semanas": [14, 17], "foco": "Compostos 5x4–6, acessórios 8–12",                            "rir": "1-2", "kcal": 2500, "proteinaG": 185, "gorduraG": 75, "carboG": 270, "passosMeta": 10000, "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [-0.2, 0], "esquemaForca": { "series": 5, "reps": [4, 6], "descansoSeg": 180 } },
-    { "id": "f3b", "nome": "Força B",             "semanas": [18, 20], "foco": "Compostos 5x3–5; volta do inclinado/desenvolvimento se sem dor", "rir": "1", "kcal": 2500, "proteinaG": 185, "gorduraG": 75, "carboG": 270, "passosMeta": 10000, "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [-0.2, 0], "esquemaForca": { "series": 5, "reps": [3, 5], "descansoSeg": 180 }, "liberaReintroducaoOmbro": true },
-    { "id": "d2",  "nome": "Deload",              "semanas": [21, 21], "foco": "Igual semana 13",                                             "rir": "4",   "kcal": 2700, "proteinaG": 185, "gorduraG": 75, "carboG": 320, "passosMeta": 8000,  "cardio": null, "deload": true },
-    { "id": "f4",  "nome": "Volume de frente",    "semanas": [22, 25], "foco": "Hipertrofia com rest-pause e drop set nos isolados",          "rir": "0-1 (isolados)", "kcal": 2650, "proteinaG": 185, "gorduraG": 75, "carboG": 310, "passosMeta": 10000, "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [0, 0], "tecnicasIntensidade": true },
-    { "id": "r",   "nome": "Reavaliação",         "semanas": [26, 26], "foco": "Testar cargas de 6 reps, fotos, bioimpedância",               "rir": null,  "kcal": 2750, "proteinaG": 185, "gorduraG": 75, "carboG": 340, "passosMeta": 8000,  "cardio": null }
+    { "id": "f1",  "nome": "Adaptação",        "semanas": [1, 4],   "foco": "Técnica, reabilitar ombro, testar cargas", "rir": "3",   "kcal": 2350, "proteinaG": 185, "gorduraG": 70, "carboG": 245, "passosMeta": 8000,  "cardio": null, "ritmoPesoKgSem": [-0.5, -0.3] },
+    { "id": "f2a", "nome": "Recomposição A",   "semanas": [5, 8],   "foco": "Hipertrofia 8–12 reps", "rir": "1-2", "kcal": 2300, "proteinaG": 190, "gorduraG": 70, "carboG": 240, "passosMeta": 9000,  "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [-0.5, -0.3] },
+    { "id": "f2b", "nome": "Recomposição B",   "semanas": [9, 12],  "foco": "Hipertrofia + 1 série nos grupos-alvo", "rir": "1-2", "kcal": 2250, "proteinaG": 190, "gorduraG": 70, "carboG": 225, "passosMeta": 10000, "cardio": { "sessoes": 3, "minutos": 25 }, "ritmoPesoKgSem": [-0.5, -0.3], "seriesExtras": ["puxada_frente_aberta", "elevacao_lateral_halter", "elevacao_lateral_cabo", "peito_superior"] },
+    { "id": "d1",  "nome": "Deload",           "semanas": [13, 13], "foco": "Metade das séries, -20% de carga", "rir": "4", "kcal": 2600, "proteinaG": 190, "gorduraG": 70, "carboG": 300, "passosMeta": 8000, "cardio": null, "deload": true },
+    { "id": "f3a", "nome": "Força A",          "semanas": [14, 17], "foco": "Compostos 5x4–6, acessórios 8–12", "rir": "1-2", "kcal": 2500, "proteinaG": 185, "gorduraG": 75, "carboG": 270, "passosMeta": 10000, "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [-0.2, 0], "esquemaForca": { "series": 5, "reps": [4, 6], "descansoSeg": 180 } },
+    { "id": "f3b", "nome": "Força B",          "semanas": [18, 20], "foco": "Compostos 5x3–5; volta do inclinado/desenvolvimento se sem dor", "rir": "1", "kcal": 2500, "proteinaG": 185, "gorduraG": 75, "carboG": 270, "passosMeta": 10000, "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [-0.2, 0], "esquemaForca": { "series": 5, "reps": [3, 5], "descansoSeg": 180 }, "liberaReintroducaoOmbro": true },
+    { "id": "d2",  "nome": "Deload",           "semanas": [21, 21], "foco": "Igual semana 13", "rir": "4", "kcal": 2700, "proteinaG": 185, "gorduraG": 75, "carboG": 320, "passosMeta": 8000, "cardio": null, "deload": true },
+    { "id": "f4",  "nome": "Volume de frente", "semanas": [22, 25], "foco": "Hipertrofia com rest-pause e drop set nos isolados", "rir": "0-1 (isolados)", "kcal": 2650, "proteinaG": 185, "gorduraG": 75, "carboG": 310, "passosMeta": 10000, "cardio": { "sessoes": 2, "minutos": 20 }, "ritmoPesoKgSem": [0, 0], "tecnicasIntensidade": true },
+    { "id": "r",   "nome": "Reavaliação",      "semanas": [26, 26], "foco": "Testar cargas de 6 reps, fotos, bioimpedância", "rir": null, "kcal": 2750, "proteinaG": 185, "gorduraG": 75, "carboG": 340, "passosMeta": 8000, "cardio": null }
   ],
 
   "agendaSemanal": {
@@ -53,24 +73,27 @@
       "nome": "Superior força",
       "exercicios": [
         { "id": "supino_reto_halter_neutro", "nome": "Supino reto com halteres, pegada neutra", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "obs": "Pegada neutra protege o ombro" },
-        { "id": "puxada_frente_aberta",      "nome": "Puxada frente pegada aberta",              "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "strap": true },
-        { "id": "remada_baixa_triangulo",    "nome": "Remada baixa triângulo",                   "series": 3, "reps": [8, 10], "tipo": "composto", "strap": true },
-        { "id": "supino_maquina",            "nome": "Supino máquina convergente",               "series": 3, "reps": [8, 10], "tipo": "composto", "ombroSensivel": true },
-        { "id": "elevacao_lateral_halter",   "nome": "Elevação lateral com halteres",            "series": 3, "reps": [12, 15], "tipo": "isolado", "biset": "A7" },
-        { "id": "rosca_direta_w",            "nome": "Rosca direta barra W",                     "series": 3, "reps": [8, 10], "tipo": "isolado" },
-        { "id": "triceps_corda",             "nome": "Tríceps pulley com corda",                 "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "A6" }
+        { "id": "puxada_frente_aberta", "nome": "Puxada frente pegada aberta", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "strap": true },
+        { "id": "remada_baixa_triangulo", "nome": "Remada baixa triângulo", "series": 3, "reps": [8, 10], "tipo": "composto", "strap": true },
+        { "id": "supino_maquina", "nome": "Supino máquina convergente", "series": 3, "reps": [8, 10], "tipo": "composto", "ombroSensivel": true },
+        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 3, "reps": [12, 15], "tipo": "isolado", "biset": "A7" },
+        { "id": "rosca_direta_w", "nome": "Rosca direta barra W", "series": 3, "reps": [8, 10], "tipo": "isolado" },
+        { "id": "triceps_corda", "nome": "Tríceps pulley com corda", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "A6" }
       ]
     },
     "B": {
       "nome": "Inferior + core",
       "exercicios": [
-        { "id": "agachamento_smith_hack", "nome": "Agachamento no smith ou hack",   "series": 4, "reps": [6, 8],  "tipo": "composto", "forcaFase3": true },
-        { "id": "stiff_halter",           "nome": "Stiff com halteres",             "series": 3, "reps": [8, 10], "tipo": "composto", "forcaFase3": true, "strap": true },
-        { "id": "leg_press",              "nome": "Leg press 45°",                  "series": 3, "reps": [10, 12], "tipo": "composto" },
-        { "id": "cadeira_flexora",        "nome": "Cadeira flexora",                "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "B5" },
-        { "id": "cadeira_extensora",      "nome": "Cadeira extensora",              "series": 2, "reps": [12, 15], "tipo": "isolado" },
-        { "id": "abdominal_cabo",         "nome": "Abdominal no cabo (ajoelhado)",  "series": 3, "reps": [12, 15], "tipo": "isolado" },
-        { "id": "prancha",                "nome": "Prancha",                        "series": 3, "segundos": [40, 60], "tipo": "tempo" }
+        { "id": "agachamento_smith_hack", "nome": "Agachamento no smith ou hack", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true },
+        { "id": "stiff_halter", "nome": "Stiff com halteres", "series": 3, "reps": [8, 10], "tipo": "composto", "forcaFase3": true, "strap": true },
+        { "id": "leg_press", "nome": "Leg press 45°", "series": 3, "reps": [10, 12], "tipo": "composto" },
+        { "id": "cadeira_flexora", "nome": "Cadeira flexora", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "B5" },
+        { "id": "elevacao_pelvica", "nome": "Elevação pélvica na máquina ou com barra", "series": 3, "reps": [10, 12], "tipo": "composto", "obs": "Correção postural (glúteo)" },
+        { "id": "abdominal_cabo", "nome": "Abdominal no cabo (ajoelhado)", "series": 3, "reps": [12, 15], "tipo": "isolado" },
+        { "id": "dead_bug", "nome": "Dead bug (lombar colada no chão)", "series": 3, "reps": [8, 8], "tipo": "isolado", "obs": "8 cada lado" }
+      ],
+      "aquecimento": [
+        { "id": "cadeira_extensora_aquec", "nome": "Cadeira extensora leve (aquecimento do joelho)", "series": 2, "reps": [15, 20], "tipo": "aquecimento", "obs": "Carga leve; alivia a dor no joelho antes do agachamento" }
       ]
     },
     "C": {
@@ -78,36 +101,36 @@
       "exercicios": [
         { "id": "peito_superior", "nome": "Crossover de baixo para cima", "series": 4, "reps": [10, 12], "tipo": "isolado",
           "substituicao": { "aPartirDaSemana": 18, "condicao": "4 semanas com dor <= 2", "id": "supino_inclinado_halter_neutro", "nome": "Supino inclinado 15–30° com halteres, pegada neutra", "series": 4, "reps": [6, 10], "tipo": "composto", "cargaInicialPct": 50 } },
-        { "id": "supino_maquina_smith",   "nome": "Supino máquina ou reto no smith", "series": 3, "reps": [8, 10],  "tipo": "composto", "ombroSensivel": true },
-        { "id": "peck_deck",              "nome": "Peck deck (voador)",              "series": 3, "reps": [12, 15], "tipo": "isolado", "obs": "Pausa de 1 s contraído" },
-        { "id": "elevacao_lateral_cabo",  "nome": "Elevação lateral no cabo, unilateral", "series": 4, "reps": [12, 15], "tipo": "isolado" },
-        { "id": "face_pull",              "nome": "Face pull",                       "series": 3, "reps": [15, 15], "tipo": "isolado" },
-        { "id": "triceps_testa_halter",   "nome": "Tríceps testa com halteres",      "series": 3, "reps": [10, 12], "tipo": "isolado" }
+        { "id": "supino_maquina_smith", "nome": "Supino máquina ou reto no smith", "series": 3, "reps": [8, 10], "tipo": "composto", "ombroSensivel": true },
+        { "id": "peck_deck", "nome": "Peck deck (voador)", "series": 3, "reps": [12, 15], "tipo": "isolado", "obs": "Pausa de 1 s contraído" },
+        { "id": "elevacao_lateral_cabo", "nome": "Elevação lateral no cabo, unilateral", "series": 4, "reps": [12, 15], "tipo": "isolado" },
+        { "id": "face_pull", "nome": "Face pull", "series": 3, "reps": [15, 15], "tipo": "isolado" },
+        { "id": "triceps_testa_halter", "nome": "Tríceps testa com halteres", "series": 3, "reps": [10, 12], "tipo": "isolado" }
       ]
     },
     "D": {
       "nome": "Puxar (costas largas)",
       "exercicios": [
-        { "id": "puxada_frente_aberta",       "nome": "Puxada frente pegada aberta",                  "series": 4, "reps": [8, 10],  "tipo": "composto", "strap": true },
-        { "id": "remada_articulada_serrote",  "nome": "Remada máquina articulada ou serrote",         "series": 3, "reps": [8, 10],  "tipo": "composto", "strap": true },
-        { "id": "pulldown_braco_estendido",   "nome": "Pulldown braço estendido no cabo",             "series": 3, "reps": [12, 15], "tipo": "isolado" },
-        { "id": "puxada_neutra_supinada",     "nome": "Puxada pegada neutra ou supinada",             "series": 3, "reps": [10, 12], "tipo": "composto", "strap": true },
-        { "id": "crucifixo_inverso",          "nome": "Crucifixo inverso na máquina",                 "series": 3, "reps": [15, 15], "tipo": "isolado" },
-        { "id": "rosca_alternada",            "nome": "Rosca alternada com halteres",                 "series": 3, "reps": [10, 12], "tipo": "isolado" },
-        { "id": "farmer_walk",                "nome": "Farmer walk com halteres",                     "series": 3, "metros": [30, 40], "tipo": "distancia", "grupo": "pegada" }
+        { "id": "puxada_frente_aberta", "nome": "Puxada frente pegada aberta", "series": 4, "reps": [8, 10], "tipo": "composto", "strap": true },
+        { "id": "remada_articulada_serrote", "nome": "Remada máquina articulada ou serrote", "series": 3, "reps": [8, 10], "tipo": "composto", "strap": true },
+        { "id": "pulldown_braco_estendido", "nome": "Pulldown braço estendido no cabo", "series": 3, "reps": [12, 15], "tipo": "isolado" },
+        { "id": "puxada_neutra_supinada", "nome": "Puxada pegada neutra ou supinada", "series": 3, "reps": [10, 12], "tipo": "composto", "strap": true },
+        { "id": "crucifixo_inverso", "nome": "Crucifixo inverso na máquina", "series": 3, "reps": [15, 15], "tipo": "isolado" },
+        { "id": "rosca_alternada", "nome": "Rosca alternada com halteres", "series": 3, "reps": [10, 12], "tipo": "isolado" },
+        { "id": "farmer_walk", "nome": "Farmer walk com halteres", "series": 3, "metros": [30, 40], "tipo": "distancia", "grupo": "pegada" }
       ]
     },
     "E": {
       "nome": "Braços, ombros e core",
       "exercicios": [
-        { "id": "elevacao_lateral_halter",  "nome": "Elevação lateral com halteres",          "series": 4, "reps": [12, 15], "tipo": "isolado", "dropSetFase4": true },
-        { "id": "rosca_scott_maquina",      "nome": "Rosca scott máquina",                    "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E3" },
-        { "id": "triceps_barra_reta",       "nome": "Tríceps pulley barra reta",              "series": 3, "reps": [10, 12], "tipo": "isolado" },
-        { "id": "rosca_martelo",            "nome": "Rosca martelo",                          "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E5" },
-        { "id": "triceps_frances_cabo",     "nome": "Tríceps francês no cabo, unilateral",    "series": 3, "reps": [12, 12], "tipo": "isolado", "ombroSensivel": true, "alternativaSeDor": "triceps_barra_reta" },
-        { "id": "rosca_inversa_w",          "nome": "Rosca inversa na barra W",               "series": 2, "reps": [12, 15], "tipo": "isolado", "grupo": "pegada" },
-        { "id": "elevacao_pernas",          "nome": "Elevação de pernas / abdominal infra",   "series": 3, "reps": [10, 15], "tipo": "isolado" },
-        { "id": "dead_hang",                "nome": "Suspensão na barra (dead hang)",         "series": 3, "segundos": [0, 60], "tipo": "tempo", "grupo": "pegada", "meta": { "segundos": 60, "ateSemana": 12 } }
+        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 4, "reps": [12, 15], "tipo": "isolado", "dropSetFase4": true },
+        { "id": "rosca_scott_maquina", "nome": "Rosca scott máquina", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E3" },
+        { "id": "triceps_barra_reta", "nome": "Tríceps pulley barra reta", "series": 3, "reps": [10, 12], "tipo": "isolado" },
+        { "id": "rosca_martelo", "nome": "Rosca martelo", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E5" },
+        { "id": "triceps_frances_cabo", "nome": "Tríceps francês no cabo, unilateral", "series": 3, "reps": [12, 12], "tipo": "isolado", "ombroSensivel": true, "alternativaSeDor": "triceps_barra_reta" },
+        { "id": "rosca_inversa_w", "nome": "Rosca inversa na barra W", "series": 2, "reps": [12, 15], "tipo": "isolado", "grupo": "pegada" },
+        { "id": "elevacao_pernas", "nome": "Elevação de pernas / abdominal infra", "series": 3, "reps": [10, 15], "tipo": "isolado" },
+        { "id": "dead_hang", "nome": "Suspensão na barra (dead hang)", "series": 3, "segundos": [0, 60], "tipo": "tempo", "grupo": "pegada", "meta": { "segundos": 60, "ateSemana": 12 } }
       ]
     }
   },
@@ -157,12 +180,32 @@
   ],
 
   "monitoramento": [
-    { "id": "peso",          "unidade": "kg", "frequencia": "3-4x/semana", "como": "Jejum, após banheiro; usar média semanal" },
-    { "id": "cintura",       "unidade": "cm", "frequencia": "a cada 2 semanas", "como": "Fita no umbigo, sem encolher" },
-    { "id": "fotos",         "unidade": null, "frequencia": "a cada 4 semanas", "como": "Frente, lado, costas; mesma luz e horário" },
-    { "id": "passos",        "unidade": "passos", "frequencia": "diária" },
-    { "id": "sono",          "unidade": "h", "frequencia": "diária", "meta": [7, 9] },
-    { "id": "dorOmbro",      "unidade": "0-10", "frequencia": "todo treino de superior" },
-    { "id": "bioimpedancia", "unidade": "% gordura / kg massa magra", "semanas": [1, 13, 26] }
+    { "id": "peso", "unidade": "kg", "frequencia": "3-4x/semana", "como": "Jejum, após banheiro; usar média semanal" },
+    { "id": "cintura", "unidade": "cm", "frequencia": "a cada 2 semanas", "como": "Fita no umbigo, sem encolher" },
+    { "id": "fotos", "unidade": null, "frequencia": "a cada 4 semanas", "como": "Frente, lado (braços soltos), costas; mesma luz e horário" },
+    { "id": "passos", "unidade": "passos", "frequencia": "diária" },
+    { "id": "sono", "unidade": "h", "frequencia": "diária", "meta": [7, 9] },
+    { "id": "dorOmbro", "unidade": "0-10", "frequencia": "todo treino de superior" },
+    { "id": "bioimpedancia", "unidade": "% gordura / kg massa magra", "semanas": [1, 13, 26] },
+    { "id": "circunferencias", "unidade": "cm", "frequencia": "a cada 4 semanas", "itens": ["ombro", "peito", "bracoEsq", "bracoDir", "barriga", "quadril", "coxaEsq", "coxaDir", "panturrilhaEsq", "panturrilhaDir"] }
+  ],
+
+  "avaliacaoInicial": {
+    "data": "2026-10-26",
+    "medidasCm": {
+      "ombro": 125, "peito": 103, "bracoEsq": 39, "bracoDir": 38, "cintura": 93, "barriga": 95,
+      "quadril": 104, "coxaEsq": 64, "coxaDir": 64, "panturrilhaEsq": 43, "panturrilhaDir": 43
+    },
+    "pesoKg": 93,
+    "gorduraBioPct": 30,
+    "proporcoes": { "ombroCintura": 1.34, "cinturaAltura": 0.51 },
+    "postura": ["Anteversão pélvica leve", "Ombros em protração leve", "Cabeça levemente à frente", "Torácica levemente arredondada"],
+    "pontosFracos": ["Largura de costas", "Peitoral superior"],
+    "pontosFortes": ["Base de ombros", "Panturrilhas (43 cm)"]
+  },
+
+  "correcaoPostural": [
+    { "id": "along_peitoral", "nome": "Alongamento de peitoral no batente", "aplicaEm": ["A", "C", "D"], "series": 2, "segundos": 30, "obs": "cada lado" },
+    { "id": "along_flexor_quadril", "nome": "Alongamento de flexor do quadril (afundo ajoelhado, glúteo contraído)", "aplicaEm": ["B"], "series": 2, "segundos": 30, "obs": "cada lado" }
   ]
 }

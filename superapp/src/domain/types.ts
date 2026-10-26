@@ -1,7 +1,7 @@
 // Tipos do protocolo (espelham protocolo.json) e do modelo de dados persistido.
 
 export type TreinoId = 'A' | 'B' | 'C' | 'D' | 'E';
-export type TipoExercicio = 'composto' | 'isolado' | 'tempo' | 'distancia';
+export type TipoExercicio = 'composto' | 'isolado' | 'tempo' | 'distancia' | 'aquecimento';
 export type DiaSemana = 'dom' | 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab';
 
 export interface Fase {
@@ -58,6 +58,28 @@ export interface Exercicio {
 export interface Treino {
   nome: string;
   exercicios: Exercicio[];
+  /** Aquecimento específico do treino (ex.: extensora leve no B para o joelho). */
+  aquecimento?: Exercicio[];
+}
+
+export interface Alongamento {
+  id: string;
+  nome: string;
+  aplicaEm: TreinoId[];
+  series: number;
+  segundos: number;
+  obs?: string;
+}
+
+export interface AvaliacaoInicial {
+  data: string;
+  medidasCm: Partial<Record<TipoMedida, number>>;
+  pesoKg?: number;
+  gorduraBioPct?: number;
+  proporcoes?: { ombroCintura: number; cinturaAltura: number };
+  postura?: string[];
+  pontosFracos?: string[];
+  pontosFortes?: string[];
 }
 
 export interface Protocolo {
@@ -74,6 +96,7 @@ export interface Protocolo {
       pesoInicialKg: number;
       gorduraInicialPct: number;
       massaMagraInicialKg: number;
+      observacoes?: string[];
     };
     metas: Record<string, Record<string, number | number[]>>;
   };
@@ -120,7 +143,17 @@ export interface Protocolo {
     diaExemplo: { refeicao: string; descricao: string; proteinaG: number }[];
   };
   suplementos: { nome: string; dose: string; frequencia: string }[];
-  monitoramento: { id: string; unidade: string | null; frequencia?: string; como?: string; meta?: number[]; semanas?: number[] }[];
+  monitoramento: {
+    id: string;
+    unidade: string | null;
+    frequencia?: string;
+    como?: string;
+    meta?: number[];
+    semanas?: number[];
+    itens?: TipoMedida[];
+  }[];
+  avaliacaoInicial?: AvaliacaoInicial;
+  correcaoPostural?: Alongamento[];
 }
 
 // ---------- Modelo de dados (IndexedDB) ----------
@@ -130,6 +163,8 @@ export type Config = {
   diasPorSemana: 4 | 5;
   ajusteKcal: number;
   ajustePassos: number;
+  /** A avaliação inicial do JSON já foi gravada como linha de base. */
+  linhaBaseCarregada?: boolean;
 };
 
 export type Tecnica = 'rest-pause' | 'drop-set';
@@ -155,11 +190,18 @@ export type SessaoTreino = {
   dorOmbro?: number;
   series: SerieRegistrada[];
   duracaoMin?: number;
+  /** Aquecimento específico do treino (treinos[X].aquecimento). */
+  aquecimentoEspecificoFeito?: boolean;
+  /** Ids dos alongamentos de correção postural feitos no fim. */
+  alongamentosFeitos?: string[];
   finalizada: boolean;
   iniciadaEm: number; // epoch ms
 };
 
-export type TipoMedida = 'peso' | 'cintura' | 'passos' | 'sono' | 'gorduraPct' | 'massaMagraKg';
+export type Circunferencia =
+  | 'cintura' | 'barriga' | 'peito' | 'quadril' | 'ombro'
+  | 'bracoEsq' | 'bracoDir' | 'coxaEsq' | 'coxaDir' | 'panturrilhaEsq' | 'panturrilhaDir';
+export type TipoMedida = 'peso' | Circunferencia | 'passos' | 'sono' | 'gorduraPct' | 'massaMagraKg';
 
 export type Medida = { id: string; data: string; tipo: TipoMedida; valor: number };
 

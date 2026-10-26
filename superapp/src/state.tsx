@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { repo } from './data/repo';
 import { hojeISO } from './domain/datas';
+import { medidasDaAvaliacaoInicial } from './domain/medidas';
 import { protocolo as P } from './domain/protocolo';
 import {
   avaliarAjusteCalorico,
@@ -60,6 +61,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let vivo = true;
+    let semeando = false;
     const carregar = async () => {
       const [config, sessoes, medidas, nutricao, decisoes] = await Promise.all([
         repo.getConfig(),
@@ -68,6 +70,16 @@ export function DadosProvider({ children }: { children: ReactNode }) {
         repo.listNutricao(),
         repo.listDecisoes(),
       ]);
+      // Primeiro acesso (ou backup antigo): grava a avaliação inicial do JSON como linha de base.
+      // Os ids são fixos (base-*), então repetir é inofensivo.
+      if (config && !config.linhaBaseCarregada) {
+        if (semeando) return;
+        semeando = true;
+        for (const m of medidasDaAvaliacaoInicial(P.avaliacaoInicial)) await repo.putMedida(m);
+        await repo.setConfig({ ...config, linhaBaseCarregada: true });
+        semeando = false;
+        return; // as escritas disparam um novo carregamento
+      }
       if (vivo) setDados({ carregado: true, config, sessoes, medidas, nutricao, decisoes });
     };
     carregar();

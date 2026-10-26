@@ -26,12 +26,17 @@ O usuário informa a **data de início** no primeiro acesso. A partir dela o app
 1. **Hoje** — semana e fase atuais, treino do dia, metas do dia (kcal, macros, passos, cardio), checklist rápido (creatina, água, passos, sono).
 2. **Treino em execução**
    - Aquecimento de ombro (quando `aquecimentoOmbro.aplicaEm` incluir o treino), com check.
+   - Aquecimento específico do treino (`treinos[X].aquecimento`, ex.: cadeira extensora leve no B para o joelho), com check.
+   - Ao final, alongamentos de `correcaoPostural` cujo `aplicaEm` inclua o treino, com check.
    - Lista de exercícios com séries × reps já ajustadas à fase (ver regras), carga sugerida e última carga feita.
    - Registro por série: carga (kg), reps, RIR. Para `tipo: tempo` registra segundos; `distancia` registra metros.
    - Indicação de bi-set, strap, observações.
    - Timer de descanso (180 s compostos na fase 3, 120–180 s compostos, 60–90 s isolados).
    - Ao fim: dor no ombro 0–10 (treinos A, C, D, E).
-3. **Medidas** — lançar peso, cintura, passos, sono, bioimpedância; upload de fotos (armazenadas localmente).
+3. **Medidas** — lançar peso, cintura, passos, sono, bioimpedância e circunferências (`monitoramento.circunferencias.itens`); upload de fotos (frente, lado com braços soltos, costas).
+   - A `avaliacaoInicial` do JSON é carregada como primeiro registro (linha de base) no primeiro acesso.
+   - Cada medida mostra: valor atual, variação desde a linha de base e meta (`metas.seisMeses`).
+   - Proporções calculadas: ombro ÷ cintura (meta 1,51) e cintura ÷ altura (meta 0,47).
 4. **Progresso** — gráficos: peso (pontos diários + média móvel 7 dias), cintura, % gordura, carga por exercício ao longo do tempo, dor do ombro, aderência semanal.
 5. **Nutrição** — metas da fase atual, dia exemplo, registro simples diário (kcal e proteína atingidas, sim/não por refeição).
 6. **Protocolo** — visualização somente leitura das fases (linha do tempo das 26 semanas) e dos 5 treinos.
@@ -74,10 +79,18 @@ O usuário informa a **data de início** no primeiro acesso. A partir dela o app
 type Config = { inicio: string; diasPorSemana: 4 | 5; ajusteKcal: number };
 type SessaoTreino = { id: string; data: string; semana: number; faseId: string; treino: 'A'|'B'|'C'|'D'|'E'; aquecimentoFeito: boolean; dorOmbro?: number; series: SerieRegistrada[]; duracaoMin?: number };
 type SerieRegistrada = { exercicioId: string; ordem: number; cargaKg?: number; reps?: number; rir?: number; segundos?: number; metros?: number; tecnica?: 'rest-pause'|'drop-set' };
-type Medida = { id: string; data: string; tipo: 'peso'|'cintura'|'passos'|'sono'|'gorduraPct'|'massaMagraKg'; valor: number };
+type TipoMedida = 'peso'|'cintura'|'barriga'|'peito'|'quadril'|'ombro'|'bracoEsq'|'bracoDir'|'coxaEsq'|'coxaDir'|'panturrilhaEsq'|'panturrilhaDir'|'passos'|'sono'|'gorduraPct'|'massaMagraKg';
+type Medida = { id: string; data: string; tipo: TipoMedida; valor: number };
 type Foto = { id: string; data: string; angulo: 'frente'|'lado'|'costas'; blob: Blob };
 type DiaNutricao = { data: string; kcal?: number; proteinaG?: number; creatina: boolean; aguaL?: number };
 ```
+
+## Mudanças da versão 2 (26/10/2026)
+
+- `avaliacaoInicial`: medidas de 26/10, proporções, postura, pontos fortes e fracos.
+- Treino B: cadeira extensora vira aquecimento (joelho); entram elevação pélvica (3 x 10–12) e dead bug (3 x 8 cada lado, no lugar da prancha).
+- `correcaoPostural`: alongamento de peitoral (fim de A, C, D) e de flexor do quadril (fim de B).
+- Novas metas de circunferência e de proporção em `metas.seisMeses`.
 
 ## Critérios de aceite da v1
 

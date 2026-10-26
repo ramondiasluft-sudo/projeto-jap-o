@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CORES_FASE } from '../components/cores';
 import { repo } from '../data/repo';
 import { formatarData } from '../domain/datas';
+import { alongamentosDoTreino } from '../domain/medidas';
 import { protocolo as P } from '../domain/protocolo';
 import { buscarExercicio, intervaloDaSemana, montarTreino } from '../domain/regras';
 import type { TreinoId } from '../domain/types';
@@ -18,6 +19,18 @@ function Protocolo() {
 
   return (
     <>
+      {P.avaliacaoInicial && (
+        <details className="card bloco">
+          <summary>Avaliação inicial · {formatarData(P.avaliacaoInicial.data)}</summary>
+          <div className="small stack" style={{ marginTop: 6 }}>
+            {P.avaliacaoInicial.pontosFortes && <div><strong>Pontos fortes:</strong> {P.avaliacaoInicial.pontosFortes.join(', ')}</div>}
+            {P.avaliacaoInicial.pontosFracos && <div><strong>Pontos fracos:</strong> {P.avaliacaoInicial.pontosFracos.join(', ')}</div>}
+            {P.avaliacaoInicial.postura && <div><strong>Postura:</strong> {P.avaliacaoInicial.postura.join('; ')}</div>}
+            {P.meta.atleta.observacoes && <div><strong>Observações:</strong> {P.meta.atleta.observacoes.join('; ')}</div>}
+          </div>
+        </details>
+      )}
+
       <div className="card">
         <h2>Linha do tempo · 26 semanas</h2>
         <div className="timeline" role="img" aria-label={`Semana atual ${d.semana}, fase ${d.fase.nome}`}>
@@ -83,7 +96,13 @@ function Protocolo() {
             ))}
           </tbody>
         </table>
-        {P.aquecimentoOmbro.aplicaEm.includes(treino) && <p className="muted">+ aquecimento de ombro ({P.aquecimentoOmbro.duracaoMin.join('–')} min)</p>}
+        {P.aquecimentoOmbro.aplicaEm.includes(treino) && <p className="muted" style={{ marginBottom: 0 }}>+ aquecimento de ombro ({P.aquecimentoOmbro.duracaoMin.join('–')} min)</p>}
+        {(P.treinos[treino].aquecimento ?? []).map((a) => (
+          <p key={a.id} className="muted" style={{ marginBottom: 0 }}>+ antes: {a.nome} ({a.series} × {a.reps?.join('–')})</p>
+        ))}
+        {alongamentosDoTreino(P, treino).map((a) => (
+          <p key={a.id} className="muted" style={{ marginBottom: 0 }}>+ no fim: {a.nome} ({a.series} × {a.segundos} s{a.obs ? ` ${a.obs}` : ''})</p>
+        ))}
       </div>
     </>
   );

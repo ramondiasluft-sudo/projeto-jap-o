@@ -4,6 +4,7 @@ import { useTimer } from '../components/Timer';
 import { fmt, lerNumero } from '../components/util';
 import { novoId, repo } from '../data/repo';
 import { formatarData } from '../domain/datas';
+import { alongamentosDoTreino } from '../domain/medidas';
 import { protocolo as P } from '../domain/protocolo';
 import { cargaSugerida, montarTreino, rirMinimo, type CargaSugerida, type Prescricao } from '../domain/regras';
 import type { SerieRegistrada, SessaoTreino, Tecnica, TreinoId } from '../domain/types';
@@ -279,6 +280,14 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
   const rirPadrao = rirMinimo(fase.rir);
   const temAquecimento = P.aquecimentoOmbro.aplicaEm.includes(sessao.treino);
   const pedeDor = temAquecimento;
+  const aquecEspecifico = P.treinos[sessao.treino].aquecimento ?? [];
+  const alongamentos = alongamentosDoTreino(P, sessao.treino);
+  const alongFeitos = sessao.alongamentosFeitos ?? [];
+  const alternarAlong = (id: string) =>
+    repo.updateSessao(sessao.id, (a) => {
+      const f = a.alongamentosFeitos ?? [];
+      return { ...a, alongamentosFeitos: f.includes(id) ? f.filter((x) => x !== id) : [...f, id] };
+    });
   const subst = P.treinos[sessao.treino].exercicios.find((e) => e.substituicao)?.substituicao;
   const minutos = Math.round((agora - sessao.iniciadaEm) / 60000);
   const totalSeries = prescricoes.reduce((a, p) => a + p.series, 0);
@@ -353,6 +362,29 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
         </div>
       )}
 
+      {aquecEspecifico.length > 0 && (
+        <div className={`card ${sessao.aquecimentoEspecificoFeito ? 'ok' : ''}`}>
+          <h2 style={{ margin: 0 }}>Aquecimento do treino</h2>
+          <ul className="lista small" style={{ margin: '6px 0' }}>
+            {aquecEspecifico.map((e) => (
+              <li key={e.id}>
+                <span>
+                  {e.nome}
+                  {e.obs && <div className="muted">{e.obs}</div>}
+                </span>
+                <span className="muted num" style={{ whiteSpace: 'nowrap' }}>{e.series} × {e.reps ? (e.reps[0] === e.reps[1] ? e.reps[0] : e.reps.join('–')) : ''}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="check" style={{ paddingBottom: 0 }}>
+            <button className={`tick ${sessao.aquecimentoEspecificoFeito ? 'on' : ''}`} aria-label="Aquecimento do treino feito" onClick={() => repo.updateSessao(sessao.id, (a) => ({ ...a, aquecimentoEspecificoFeito: !a.aquecimentoEspecificoFeito }))}>
+              {sessao.aquecimentoEspecificoFeito && <IcCheck />}
+            </button>
+            <span>Aquecimento feito</span>
+          </div>
+        </div>
+      )}
+
       {prescricoes.map((p) => (
         <CardExercicio
           key={p.exercicio.id + (p.original?.id ?? '')}
@@ -372,6 +404,23 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
           salvar={salvarSerie(p)}
         />
       ))}
+
+      {alongamentos.length > 0 && (
+        <div className={`card ${alongamentos.every((a) => alongFeitos.includes(a.id)) ? 'ok' : ''}`}>
+          <h2>Correção postural (fim do treino)</h2>
+          {alongamentos.map((a) => (
+            <div className="check" key={a.id}>
+              <button className={`tick ${alongFeitos.includes(a.id) ? 'on' : ''}`} aria-label={a.nome} onClick={() => alternarAlong(a.id)}>
+                {alongFeitos.includes(a.id) && <IcCheck />}
+              </button>
+              <div className="grow">
+                {a.nome}
+                <div className="muted small">{a.series} × {a.segundos} s{a.obs ? ` ${a.obs}` : ''}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="card">
         {pedeDor && (

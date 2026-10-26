@@ -168,6 +168,7 @@ export default function Hoje() {
             <p className="muted">
               {treino.exercicios.length} exercícios · ~{P.meta.duracaoTreinoMin} min
               {P.aquecimentoOmbro.aplicaEm.includes(d.treinoHoje) && ' · aquecimento de ombro'}
+              {treino.aquecimento?.length ? ` · ${treino.aquecimento.map((a) => a.nome.split(' (')[0].toLowerCase()).join(', ')}` : ''}
               {f.deload && ' · deload'}
             </p>
             <button className="btn primary block" onClick={() => comecar(d.treinoHoje!)}>
