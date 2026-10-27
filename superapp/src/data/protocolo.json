@@ -278,6 +278,9 @@
       { "id": "cottage", "nome": "Queijo cottage", "por100g": { "kcal": 86, "p": 11.0, "c": 3.4, "g": 2.3 }, "porcao": { "nome": "1 pote", "g": 150 } },
       { "id": "salada", "nome": "Salada/legumes", "por100g": { "kcal": 25, "p": 1.5, "c": 4.0, "g": 0.2 }, "porcao": { "nome": "1 prato", "g": 100 } },
       { "id": "azeite", "nome": "Azeite/óleo", "por100g": { "kcal": 884, "p": 0, "c": 0, "g": 100 }, "porcao": { "nome": "1 col. de chá", "g": 4 } },
+      { "id": "hamburguer_caseiro", "nome": "Hambúrguer caseiro (carne moída comum, pronto)", "por100g": { "kcal": 254, "p": 25.8, "c": 0, "g": 16.4 }, "porcao": { "nome": "1 disco", "g": 150 } },
+      { "id": "manga", "nome": "Manga", "por100g": { "kcal": 72, "p": 0.4, "c": 19.4, "g": 0.2 }, "porcao": { "nome": "1 xícara picada", "g": 150 } },
+      { "id": "cebola", "nome": "Cebola (roxa ou branca)", "por100g": { "kcal": 39, "p": 1.7, "c": 8.9, "g": 0.1 }, "porcao": { "nome": "½ cebola", "g": 50 } },
       { "id": "refrigerante", "nome": "Refrigerante comum", "por100g": { "kcal": 40, "p": 0, "c": 10.0, "g": 0 }, "porcao": { "nome": "1 copo", "g": 250 } }
     ]
   },
