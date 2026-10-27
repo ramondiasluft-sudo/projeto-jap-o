@@ -103,6 +103,28 @@ export interface OpcaoRefeicao {
   proteinaG: number;
 }
 
+export interface Macros {
+  kcal: number;
+  /** proteína (g) */
+  p: number;
+  /** carboidrato (g) */
+  c: number;
+  /** gordura (g) */
+  g: number;
+}
+
+export interface Alimento {
+  id: string;
+  nome: string;
+  por100g: Macros;
+  porcao?: { nome: string; g: number };
+}
+
+/** Item de uma refeição montada. Guarda os macros calculados, para o histórico não mudar se a tabela mudar. */
+export type ItemRefeicao = Macros & { alimentoId?: string; nome: string; gramas?: number };
+
+export type RefeicaoSalva = { id: string; nome: string; itens: ItemRefeicao[] };
+
 export interface Refeicao extends OpcaoRefeicao {
   refeicao: string;
   alternativas?: OpcaoRefeicao[];
@@ -169,6 +191,8 @@ export interface Protocolo {
     refeicoesComProteina: { quantidade: number; proteinaPorRefeicaoG: [number, number] };
     diaExemplo: Refeicao[];
     trocasCarboidrato?: { referencia: string; equivalentes: string[] };
+    alimentosObs?: string;
+    alimentos?: Alimento[];
     dicas?: string[];
   };
   suplementos: { nome: string; dose: string; frequencia: string }[];
@@ -192,6 +216,8 @@ export type Config = {
   diasPorSemana: 4 | 5;
   ajusteKcal: number;
   ajustePassos: number;
+  /** Refeições montadas que o usuário salvou para repetir. */
+  refeicoesSalvas?: RefeicaoSalva[];
   /** Variação escolhida por exercício (id do protocolo → id usado). */
   variacoes?: Record<string, string>;
   /** A avaliação inicial do JSON já foi gravada como linha de base. */
@@ -250,6 +276,8 @@ export type DiaNutricao = {
   refeicoes?: boolean[];
   /** Opção escolhida por refeição: -1 = dia exemplo, 0..n = índice em `alternativas`. */
   opcoes?: (number | null)[];
+  /** Refeição montada (o que foi comido de fato), por refeição. Usada quando opcoes[i] = -2. */
+  livres?: (ItemRefeicao[] | null)[];
 };
 
 export type TipoAjuste = 'kcal+150' | 'kcal-150' | 'passos+2000';

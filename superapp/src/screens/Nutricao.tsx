@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { IcCheck } from '../components/Icones';
+import MontarRefeicao, { descreverItens, textoMacros } from '../components/MontarRefeicao';
 import { fmt, lerNumero } from '../components/util';
 import { repo } from '../data/repo';
 import { formatarData, somarDias } from '../domain/datas';
 import { protocolo as P } from '../domain/protocolo';
-import { opcaoDaRefeicao, proteinaDasRefeicoes } from '../domain/nutricao';
-import type { DiaNutricao, OpcaoRefeicao } from '../domain/types';
+import { livreDaRefeicao, OPCAO_LIVRE, opcaoDaRefeicao, proteinaDasRefeicoes, somarItens } from '../domain/nutricao';
+import type { DiaNutricao, ItemRefeicao, OpcaoRefeicao } from '../domain/types';
 import { useDados } from '../state';
 
 export default function Nutricao() {
@@ -25,6 +26,18 @@ export default function Nutricao() {
   const refeicoes = dia.refeicoes ?? n.diaExemplo.map(() => false);
   const opcoes = dia.opcoes ?? n.diaExemplo.map(() => null);
   const [aberta, setAberta] = useState<number | null>(null);
+  const [montando, setMontando] = useState<number | null>(null);
+  const salvas = d.config?.refeicoesSalvas ?? [];
+  /** Grava a refeição montada na refeição i e marca como feita. */
+  const salvarLivre = (i: number, itens: ItemRefeicao[]) => {
+    const livres = n.diaExemplo.map((_, j) => (j === i ? itens : dia.livres?.[j] ?? null));
+    const ops = n.diaExemplo.map((_, j) => (j === i ? OPCAO_LIVRE : opcoes[j] ?? null));
+    salvar({ livres, opcoes: ops, refeicoes: refeicoes.map((v, j) => (j === i ? true : v)) });
+    setMontando(null);
+    setAberta(null);
+  };
+  const livresDoDia = n.diaExemplo.map((_, i) => (refeicoes[i] ? livreDaRefeicao(dia, i) : undefined)).filter((x): x is ItemRefeicao[] => !!x);
+  const kcalMontadas = livresDoDia.length ? somarItens(livresDoDia.flat()).kcal : 0;
   const protEstimada = proteinaDasRefeicoes(n.diaExemplo, dia);
   const ultimos = Array.from({ length: 7 }, (_, i) => somarDias(d.hoje, -i)).map((dt) => ({
     data: dt,
@@ -65,7 +78,10 @@ export default function Nutricao() {
         </div>
         {protEstimada > 0 && (
           <div className="row between small">
-            <span className="muted">Pelas refeições marcadas: <strong className="num">~{protEstimada} g</strong> de {f.proteinaG} g</span>
+            <span className="muted">
+              Pelas refeições marcadas: <strong className="num">~{protEstimada} g</strong> de {f.proteinaG} g
+              {kcalMontadas > 0 && <> · montadas: <strong className="num">{kcalMontadas} kcal</strong></>}
+            </span>
             {dia.proteinaG !== protEstimada && (
               <button className="btn sm" onClick={() => salvar({ proteinaG: protEstimada })}>Usar</button>
             )}
@@ -73,8 +89,12 @@ export default function Nutricao() {
         )}
         <div>
           {n.diaExemplo.map((r, i) => {
-            const escolhida = opcaoDaRefeicao(r, opcoes[i]);
-            const total = 1 + (r.alternativas?.length ?? 0);
+            const livre = livreDaRefeicao(dia, i);
+            const macrosLivre = livre ? somarItens(livre) : undefined;
+            const escolhida = livre
+              ? { descricao: descreverItens(livre), proteinaG: Math.round(macrosLivre!.p) }
+              : opcaoDaRefeicao(r, opcoes[i]);
+            const total = 2 + (r.alternativas?.length ?? 0) + salvas.length;
             return (
               <div key={r.refeicao} style={{ borderBottom: '1px solid var(--border)' }}>
                 <div className="check" style={{ borderBottom: 0 }}>
@@ -87,16 +107,45 @@ export default function Nutricao() {
                   </button>
                   <div className="grow">
                     <strong>{r.refeicao}</strong> <span className="muted">~{escolhida.proteinaG} g prot.</span>
-                    <div className="small muted">{escolhida.descricao}</div>
+                    <div className="small muted">
+                      {livre && <span className="chip accent" style={{ marginRight: 4 }}>o que comi</span>}
+                      {escolhida.descricao}
+                    </div>
+                    {macrosLivre && <div className="small muted num">{textoMacros(macrosLivre)}</div>}
                   </div>
                   {total > 1 && (
-                    <button className="btn sm" aria-expanded={aberta === i} onClick={() => setAberta(aberta === i ? null : i)}>
+                    <button className="btn sm" aria-expanded={aberta === i} onClick={() => { setAberta(aberta === i ? null : i); setMontando(null); }}>
                       Trocar ({total})
                     </button>
                   )}
                 </div>
-                {aberta === i && (
+                {montando === i && (
+                  <MontarRefeicao
+                    titulo={`${r.refeicao}: o que comi`}
+                    inicial={livre}
+                    onSalvar={(itens) => salvarLivre(i, itens)}
+                    onCancelar={() => setMontando(null)}
+                  />
+                )}
+                {aberta === i && montando !== i && (
                   <div className="stack" style={{ paddingBottom: 10 }}>
+                    <button className="btn block primary" onClick={() => setMontando(i)}>
+                      ✏️ {livre ? 'Editar o que comi' : 'Montar o que comi (gramas)'}
+                    </button>
+                    {salvas.map((sv) => {
+                      const t = somarItens(sv.itens);
+                      return (
+                        <button
+                          key={sv.id}
+                          className="btn block"
+                          style={{ textAlign: 'left', fontWeight: 400, display: 'flex', gap: 8, justifyContent: 'space-between' }}
+                          onClick={() => salvarLivre(i, sv.itens)}
+                        >
+                          <span className="small">⭐ <strong>{sv.nome}</strong></span>
+                          <span className="small num" style={{ whiteSpace: 'nowrap', fontWeight: 700 }}>{Math.round(t.p)} g · {t.kcal} kcal</span>
+                        </button>
+                      );
+                    })}
                     {[r as OpcaoRefeicao, ...(r.alternativas ?? [])].map((o, k) => {
                       const idx = k - 1; // -1 = dia exemplo
                       const on = (opcoes[i] ?? -1) === idx;

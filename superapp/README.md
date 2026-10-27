@@ -57,3 +57,7 @@ a branch `gh-pages` (workflow `.github/workflows/superapp-pages.yml`).
   Km ou velocidade: o que faltar é calculado; o que foi digitado nunca é sobrescrito. A semana conta
   quantas sessões atingiram os minutos da meta da fase.
 - **Anotações** do treino ficam na sessão e aparecem no histórico.
+- **Refeição montada ("o que comi")**: em cada refeição, monte com alimentos da tabela
+  `nutricao.alimentos` (macros por 100 g, base TACO) + gramas, ou itens livres (nome, kcal, proteína).
+  Os macros calculados ficam gravados no dia, então mudar a tabela não altera o histórico.
+  Combinações podem ser guardadas em "Minhas refeições" (configuração) e reaplicadas com um toque.
