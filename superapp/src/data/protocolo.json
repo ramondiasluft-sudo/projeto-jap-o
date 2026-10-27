@@ -17,7 +17,9 @@
       "observacoes": [
         "Dor no ombro esquerdo (supino inclinado e desenvolvimento)",
         "Dor no joelho aliviada com cadeira extensora leve como aquecimento",
-        "Pegada fraca"
+        "Pegada fraca",
+        "27/10/2026: trocou supino reto com halteres por barra e elevação lateral com halteres por máquina — sentiu mais segurança no ombro",
+        "27/10/2026: cardio pós-treino de 15 min, 1,60 km, velocidade média 6,0 km/h"
       ]
     },
     "metas": {
@@ -57,6 +59,19 @@
     "obs4dias": "Com 4 dias, distribuir elevação lateral e roscas extras no A e no D."
   },
 
+  "cardio": {
+    "quando": "Depois do treino de força (ou em dia de descanso)",
+    "intensidade": "Zona 2: dá para conversar; esforço 5–6 de 10",
+    "opcoes": [
+      { "id": "esteira_caminhada", "nome": "Esteira — caminhada", "obs": "5,5–6,5 km/h" },
+      { "id": "esteira_inclinada", "nome": "Esteira — caminhada inclinada", "obs": "Inclinação 6–10%, 4,5–5,5 km/h; poupa o joelho" },
+      { "id": "bike", "nome": "Bicicleta ergométrica", "obs": "Cadência 70–90 rpm; boa opção se o joelho incomodar" },
+      { "id": "eliptico", "nome": "Elíptico (transport)", "obs": "Baixo impacto" },
+      { "id": "escada", "nome": "Escada (simulador)", "obs": "Ritmo moderado; mais intenso — comece com 10 min" },
+      { "id": "rua", "nome": "Caminhada na rua", "obs": "Conta também para os passos" }
+    ]
+  },
+
   "aquecimentoOmbro": {
     "aplicaEm": ["A", "C", "D", "E"],
     "duracaoMin": [6, 8],
@@ -72,11 +87,15 @@
     "A": {
       "nome": "Superior força",
       "exercicios": [
-        { "id": "supino_reto_halter_neutro", "nome": "Supino reto com halteres, pegada neutra", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "obs": "Pegada neutra protege o ombro" },
+        { "id": "supino_reto_halter_neutro", "nome": "Supino reto com halteres, pegada neutra", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "obs": "Pegada neutra protege o ombro",
+          "variacoes": [{ "id": "supino_reto_barra", "nome": "Supino reto com barra", "obs": "Preferido desde 27/10: mais seguro para o ombro" }],
+          "variacaoPreferida": "supino_reto_barra" },
         { "id": "puxada_frente_aberta", "nome": "Puxada frente pegada aberta", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "strap": true },
         { "id": "remada_baixa_triangulo", "nome": "Remada baixa triângulo", "series": 3, "reps": [8, 10], "tipo": "composto", "strap": true },
         { "id": "supino_maquina", "nome": "Supino máquina convergente", "series": 3, "reps": [8, 10], "tipo": "composto", "ombroSensivel": true },
-        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 3, "reps": [12, 15], "tipo": "isolado", "biset": "A7" },
+        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 3, "reps": [12, 15], "tipo": "isolado", "biset": "A7",
+          "variacoes": [{ "id": "elevacao_lateral_maquina", "nome": "Elevação lateral na máquina", "obs": "Preferida desde 27/10: mais segura para o ombro" }],
+          "variacaoPreferida": "elevacao_lateral_maquina" },
         { "id": "rosca_direta_w", "nome": "Rosca direta barra W", "series": 3, "reps": [8, 10], "tipo": "isolado" },
         { "id": "triceps_corda", "nome": "Tríceps pulley com corda", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "A6" }
       ]
@@ -123,7 +142,9 @@
     "E": {
       "nome": "Braços, ombros e core",
       "exercicios": [
-        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 4, "reps": [12, 15], "tipo": "isolado", "dropSetFase4": true },
+        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 4, "reps": [12, 15], "tipo": "isolado", "dropSetFase4": true,
+          "variacoes": [{ "id": "elevacao_lateral_maquina", "nome": "Elevação lateral na máquina", "obs": "Preferida desde 27/10: mais segura para o ombro" }],
+          "variacaoPreferida": "elevacao_lateral_maquina" },
         { "id": "rosca_scott_maquina", "nome": "Rosca scott máquina", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E3" },
         { "id": "triceps_barra_reta", "nome": "Tríceps pulley barra reta", "series": 3, "reps": [10, 12], "tipo": "isolado" },
         { "id": "rosca_martelo", "nome": "Rosca martelo", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E5" },

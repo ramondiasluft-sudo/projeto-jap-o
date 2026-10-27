@@ -2,7 +2,7 @@
 // IndexedDB (Dexie). Para plugar Supabase/Firebase, basta outra implementação.
 
 import Dexie, { type Table } from 'dexie';
-import type { Config, DecisaoAjuste, DiaNutricao, Foto, Medida, SessaoTreino, TipoMedida } from '../domain/types';
+import type { Cardio, Config, DecisaoAjuste, DiaNutricao, Foto, Medida, SessaoTreino, TipoMedida } from '../domain/types';
 
 export interface Backup {
   app: 'superapp';
@@ -13,6 +13,7 @@ export interface Backup {
   medidas: Medida[];
   nutricao: DiaNutricao[];
   decisoes: DecisaoAjuste[];
+  cardios?: Cardio[];
   fotos: (Omit<Foto, 'blob'> & { dataUrl: string })[];
 }
 
@@ -38,6 +39,10 @@ export interface Repo {
   listNutricao(): Promise<DiaNutricao[]>;
   putNutricao(n: DiaNutricao): Promise<void>;
 
+  listCardios(): Promise<Cardio[]>;
+  putCardio(c: Cardio): Promise<void>;
+  deleteCardio(id: string): Promise<void>;
+
   listDecisoes(): Promise<DecisaoAjuste[]>;
   putDecisao(d: DecisaoAjuste): Promise<void>;
 
@@ -55,6 +60,7 @@ class Banco extends Dexie {
   fotos!: Table<Foto, string>;
   nutricao!: Table<DiaNutricao, string>;
   decisoes!: Table<DecisaoAjuste, string>;
+  cardios!: Table<Cardio, string>;
 
   constructor(nome: string) {
     super(nome);
@@ -66,6 +72,7 @@ class Banco extends Dexie {
       nutricao: 'data',
       decisoes: 'id',
     });
+    this.version(2).stores({ cardios: 'id, data, sessaoId' });
   }
 }
 
@@ -130,6 +137,10 @@ export function criarRepoDexie(nome = 'superapp'): Repo {
     listNutricao: () => db.nutricao.orderBy('data').toArray(),
     putNutricao: escrita((n: DiaNutricao) => db.nutricao.put(n)),
 
+    listCardios: () => db.cardios.orderBy('data').toArray(),
+    putCardio: escrita((c: Cardio) => db.cardios.put(c)),
+    deleteCardio: escrita((id: string) => db.cardios.delete(id)),
+
     listDecisoes: () => db.decisoes.toArray(),
     putDecisao: escrita((d: DecisaoAjuste) => db.decisoes.put(d)),
 
@@ -144,6 +155,7 @@ export function criarRepoDexie(nome = 'superapp'): Repo {
         medidas: await db.medidas.toArray(),
         nutricao: await db.nutricao.toArray(),
         decisoes: await db.decisoes.toArray(),
+        cardios: await db.cardios.toArray(),
         fotos: await Promise.all(
           fotos.map(async ({ blob, ...f }) => ({ ...f, dataUrl: await blobParaDataUrl(blob) })),
         ),
@@ -155,13 +167,15 @@ export function criarRepoDexie(nome = 'superapp'): Repo {
       const fotos = await Promise.all(
         (b.fotos ?? []).map(async ({ dataUrl, ...f }) => ({ ...f, blob: await dataUrlParaBlob(dataUrl) })),
       );
-      await db.transaction('rw', [db.config, db.sessoes, db.medidas, db.fotos, db.nutricao, db.decisoes], async () => {
-        await Promise.all([db.config, db.sessoes, db.medidas, db.fotos, db.nutricao, db.decisoes].map((t) => t.clear()));
+      const tabelas = [db.config, db.sessoes, db.medidas, db.fotos, db.nutricao, db.decisoes, db.cardios];
+      await db.transaction('rw', tabelas, async () => {
+        await Promise.all(tabelas.map((t) => t.clear()));
         if (b.config) await db.config.put({ ...b.config, chave: 'main' });
         await db.sessoes.bulkPut(b.sessoes ?? []);
         await db.medidas.bulkPut(b.medidas ?? []);
         await db.nutricao.bulkPut(b.nutricao ?? []);
         await db.decisoes.bulkPut(b.decisoes ?? []);
+        await db.cardios.bulkPut(b.cardios ?? []);
         await db.fotos.bulkPut(fotos);
       });
     }),

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import CardioCard, { nomeCardio, resumoCardio } from '../components/CardioCard';
 import { IcCheck } from '../components/Icones';
 import { useTimer } from '../components/Timer';
 import { fmt, lerNumero } from '../components/util';
@@ -58,6 +59,8 @@ function Escolher() {
         <button className="btn primary block" onClick={comecar}>Começar treino {escolhido}</button>
       </div>
 
+      <CardioCard titulo="Cardio avulso" />
+
       {historico.length > 0 && (
         <div className="card">
           <h2>Últimos treinos</h2>
@@ -67,12 +70,16 @@ function Escolher() {
                 <div>
                   <strong>{formatarData(s.data)} · {s.treino}</strong>{' '}
                   <span className="muted">sem. {s.semana} · {new Set(s.series.map((x) => x.exercicioId)).size} exerc. · {s.series.length} séries{s.duracaoMin ? ` · ${s.duracaoMin} min` : ''}</span>
+                  {d.cardios.filter((c) => c.sessaoId === s.id).map((c) => (
+                    <div key={c.id} className="small muted">Cardio: {nomeCardio(c.tipo)} · {resumoCardio(c)}</div>
+                  ))}
+                  {s.observacoes && <div className="small" style={{ whiteSpace: 'pre-wrap', marginTop: 2 }}>📝 {s.observacoes}</div>}
                 </div>
                 <div className="row">
                   {typeof s.dorOmbro === 'number' && (
                     <span className={`chip ${s.dorOmbro > P.regras.dorOmbro.limiteOk ? 'bad' : 'good'}`}>dor {s.dorOmbro}</span>
                   )}
-                  <button className="btn ghost sm danger" aria-label="Apagar" onClick={() => confirm('Apagar este treino?') && repo.deleteSessao(s.id)}>✕</button>
+                  <button className="btn ghost sm danger" aria-label="Apagar" onClick={() => { if (confirm('Apagar este treino?')) { repo.deleteSessao(s.id); d.cardios.filter((c) => c.sessaoId === s.id).forEach((c) => repo.deleteCardio(c.id)); } }}>✕</button>
                 </div>
               </li>
             ))}
@@ -193,6 +200,12 @@ function CardExercicio(props: {
   const feitas = sessao.series.filter((s) => s.exercicioId === ex.id);
   const parceiro = ex.biset ? P.treinos[ex.biset[0] as TreinoId]?.exercicios[Number(ex.biset.slice(1)) - 1] : undefined;
   const completo = feitas.length >= p.series;
+  const d = useDados();
+  // A escolha vale para os próximos treinos também.
+  const trocarVariacao = (idBase: string, id: string) => {
+    if (!d.config) return;
+    repo.setConfig({ ...d.config, variacoes: { ...d.config.variacoes, [idBase]: id } });
+  };
 
   return (
     <div className="card" style={completo ? { opacity: 0.75 } : undefined}>
@@ -205,6 +218,24 @@ function CardExercicio(props: {
         </div>
         {completo && <span className="chip good">Feito</span>}
       </div>
+      {p.opcoesVariacao && p.idBase && (
+        <div className="seg" style={{ marginTop: 8 }} role="radiogroup" aria-label="Variação">
+          {p.opcoesVariacao.map((o) => (
+            <button
+              key={o.id}
+              role="radio"
+              aria-checked={ex.id === o.id}
+              className={ex.id === o.id ? 'on' : ''}
+              disabled={feitas.length > 0 && ex.id !== o.id}
+              title={feitas.length > 0 ? 'Desmarque as séries para trocar' : undefined}
+              style={{ whiteSpace: 'normal', fontSize: 13 }}
+              onClick={() => trocarVariacao(p.idBase!, o.id)}
+            >
+              {o.nome}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="row wrap" style={{ marginTop: 6 }}>
         {p.forca && <span className="chip accent">Força</span>}
         {p.serieExtra && <span className="chip accent">+1 série</span>}
@@ -264,6 +295,7 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
   const d = useDados();
   const timer = useTimer();
   const [dor, setDor] = useState<number | undefined>(sessao.dorOmbro);
+  const [obs, setObs] = useState(sessao.observacoes ?? '');
   const [agora, setAgora] = useState(Date.now());
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 30_000);
@@ -272,8 +304,15 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
 
   const fase = P.fases.find((f) => f.id === sessao.faseId) ?? d.fase;
   const prescricoes = useMemo(
-    () => montarTreino(P, sessao.treino, { semana: sessao.semana, fase, dorAlta: d.dor.alerta, substituirInclinado: d.inclinado.substituir }),
-    [sessao.treino, sessao.semana, fase, d.dor.alerta, d.inclinado.substituir],
+    () =>
+      montarTreino(P, sessao.treino, {
+        semana: sessao.semana,
+        fase,
+        dorAlta: d.dor.alerta,
+        substituirInclinado: d.inclinado.substituir,
+        variacoes: d.config?.variacoes,
+      }),
+    [sessao.treino, sessao.semana, fase, d.dor.alerta, d.inclinado.substituir, d.config?.variacoes],
   );
   const historico = useMemo(() => d.sessoes.filter((s) => s.finalizada && s.id !== sessao.id), [d.sessoes, sessao.id]);
   const inc = P.regras.duplaProgressao.incrementoKg;
@@ -302,7 +341,7 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
 
   const finalizar = async () => {
     if (pedeDor && dor === undefined && !confirm('Finalizar sem registrar a dor no ombro?')) return;
-    await repo.updateSessao(sessao.id, (a) => ({ ...a, dorOmbro: dor, finalizada: true, duracaoMin: Math.min(240, Math.max(1, minutos)) }));
+    await repo.updateSessao(sessao.id, (a) => ({ ...a, dorOmbro: dor, observacoes: obs.trim() || undefined, finalizada: true, duracaoMin: Math.min(240, Math.max(1, minutos)) }));
     timer.parar();
     window.scrollTo(0, 0);
   };
@@ -422,7 +461,20 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
         </div>
       )}
 
+      <CardioCard sessaoId={sessao.id} data={sessao.data} titulo="Cardio (fim do treino)" />
+
       <div className="card">
+        <label className="campo" style={{ marginBottom: 12 }}>
+          <strong style={{ color: 'var(--text)' }}>Anotações</strong>
+          <textarea
+            className="input"
+            rows={3}
+            placeholder="Ex.: troquei o supino com halteres pela barra, me senti mais seguro no ombro"
+            value={obs}
+            onChange={(e) => setObs(e.target.value)}
+            onBlur={() => obs !== (sessao.observacoes ?? '') && repo.updateSessao(sessao.id, (a) => ({ ...a, observacoes: obs.trim() || undefined }))}
+          />
+        </label>
         {pedeDor && (
           <>
             <h2>Dor no ombro hoje (0–10)</h2>
@@ -435,7 +487,7 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
           </>
         )}
         <button className="btn primary block" onClick={finalizar}>Finalizar treino</button>
-        <button className="btn ghost danger block" style={{ marginTop: 8 }} onClick={() => { if (confirm('Descartar este treino? As séries registradas serão apagadas.')) { timer.parar(); repo.deleteSessao(sessao.id); } }}>
+        <button className="btn ghost danger block" style={{ marginTop: 8 }} onClick={() => { if (confirm('Descartar este treino? As séries registradas serão apagadas.')) { timer.parar(); repo.deleteSessao(sessao.id); d.cardios.filter((c) => c.sessaoId === sessao.id).forEach((c) => repo.deleteCardio(c.id)); } }}>
           Descartar
         </button>
       </div>

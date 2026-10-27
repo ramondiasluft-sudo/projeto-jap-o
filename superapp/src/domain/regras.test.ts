@@ -3,6 +3,7 @@ import { diaDaSemana, somarDias } from './datas';
 import { protocolo as P } from './protocolo';
 import {
   aderenciaSemanal,
+  buscarExercicio,
   avaliarAjusteCalorico,
   avaliarInclinado,
   cargaSugerida,
@@ -349,5 +350,40 @@ describe('médias, aderência e semana 26', () => {
     expect(r.cargas[0]).toMatchObject({ exercicioId: 'leg_press', inicio: 100, fim: 160 });
     medidas[1].valor = 22;
     expect(resumoSemana26(P, medidas, s).decisao).toBe(P.regras.decisaoSemana26.senao);
+  });
+});
+
+describe('variações de exercício', () => {
+  const treino = (t: 'A' | 'E', semana: number, variacoes?: Record<string, string>) =>
+    montarTreino(P, t, { semana, fase: faseDaSemana(P.fases, semana), variacoes });
+
+  it('usa a variação preferida do protocolo (barra e máquina)', () => {
+    const a = treino('A', 1);
+    expect(a[0].exercicio.id).toBe('supino_reto_barra');
+    expect(a[0].idBase).toBe('supino_reto_halter_neutro');
+    expect(a[0].opcoesVariacao?.map((o) => o.id)).toEqual(['supino_reto_halter_neutro', 'supino_reto_barra']);
+    expect(a.find((p) => p.idBase === 'elevacao_lateral_halter')!.exercicio.id).toBe('elevacao_lateral_maquina');
+  });
+
+  it('a escolha do usuário vence a preferida', () => {
+    expect(treino('A', 1, { supino_reto_halter_neutro: 'supino_reto_halter_neutro' })[0].exercicio.id).toBe('supino_reto_halter_neutro');
+  });
+
+  it('a variação herda séries, força, +1 série e drop set', () => {
+    expect(treino('A', 14)[0]).toMatchObject({ series: 5, faixa: [4, 6], forca: true });
+    const e9 = treino('E', 9).find((p) => p.idBase === 'elevacao_lateral_halter')!;
+    expect(e9.series).toBe(5);
+    expect(treino('E', 22).find((p) => p.idBase === 'elevacao_lateral_halter')!.tecnicaUltimaSerie).toBe('drop set');
+  });
+
+  it('cada variação tem histórico de carga próprio', () => {
+    const h = [sessao({ data: '2026-01-05', series: series('supino_reto_halter_neutro', 4, { cargaKg: 30, reps: 8, rir: 3 }) })];
+    const base = { tipo: 'composto' as const, topoFaixa: 8, unidade: 'reps' as const, fatorCarga: 1, historico: h, fases: P.fases, incrementoKg: { composto: 2.5, isolado: 1 } };
+    expect(cargaSugerida({ ...base, exercicioId: 'supino_reto_barra' }).motivo).toBe('sem-historico');
+    expect(cargaSugerida({ ...base, exercicioId: 'supino_reto_halter_neutro' }).cargaKg).toBe(32.5);
+  });
+
+  it('nome da variação é encontrado para gráficos e resumo', () => {
+    expect(buscarExercicio(P, 'elevacao_lateral_maquina')?.nome).toBe('Elevação lateral na máquina');
   });
 });

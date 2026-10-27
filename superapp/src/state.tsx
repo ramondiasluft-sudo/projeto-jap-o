@@ -13,7 +13,8 @@ import {
   treinoDoDia,
   type SugestaoAjuste,
 } from './domain/regras';
-import type { Config, DecisaoAjuste, DiaNutricao, Fase, Medida, SessaoTreino, TreinoId } from './domain/types';
+import { cardioDaSemana, type CardioSemana } from './domain/cardio';
+import type { Cardio, Config, DecisaoAjuste, DiaNutricao, Fase, Medida, SessaoTreino, TreinoId } from './domain/types';
 
 export interface Dados {
   carregado: boolean;
@@ -22,6 +23,7 @@ export interface Dados {
   medidas: Medida[];
   nutricao: DiaNutricao[];
   decisoes: DecisaoAjuste[];
+  cardios: Cardio[];
 }
 
 export interface Derivado extends Dados {
@@ -36,6 +38,7 @@ export interface Derivado extends Dados {
   /** Sessão em andamento (não finalizada), se houver. */
   emAndamento?: SessaoTreino;
   kcalMeta: number;
+  cardioSemana: CardioSemana;
   passosMeta: number;
 }
 
@@ -56,19 +59,20 @@ function useHoje(): string {
 }
 
 export function DadosProvider({ children }: { children: ReactNode }) {
-  const [dados, setDados] = useState<Dados>({ carregado: false, sessoes: [], medidas: [], nutricao: [], decisoes: [] });
+  const [dados, setDados] = useState<Dados>({ carregado: false, sessoes: [], medidas: [], nutricao: [], decisoes: [], cardios: [] });
   const hoje = useHoje();
 
   useEffect(() => {
     let vivo = true;
     let semeando = false;
     const carregar = async () => {
-      const [config, sessoes, medidas, nutricao, decisoes] = await Promise.all([
+      const [config, sessoes, medidas, nutricao, decisoes, cardios] = await Promise.all([
         repo.getConfig(),
         repo.listSessoes(),
         repo.listMedidas(),
         repo.listNutricao(),
         repo.listDecisoes(),
+        repo.listCardios(),
       ]);
       // Primeiro acesso (ou backup antigo): grava a avaliação inicial do JSON como linha de base.
       // Os ids são fixos (base-*), então repetir é inofensivo.
@@ -80,7 +84,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
         semeando = false;
         return; // as escritas disparam um novo carregamento
       }
-      if (vivo) setDados({ carregado: true, config, sessoes, medidas, nutricao, decisoes });
+      if (vivo) setDados({ carregado: true, config, sessoes, medidas, nutricao, decisoes, cardios });
     };
     carregar();
     const off = repo.subscribe(carregar);
@@ -119,6 +123,7 @@ export function DadosProvider({ children }: { children: ReactNode }) {
       sugestaoAjuste: sug && !decidida.has(sug.semana) ? sug : null,
       emAndamento: dados.sessoes.find((s) => !s.finalizada),
       kcalMeta: fase.kcal + (cfg?.ajusteKcal ?? 0),
+      cardioSemana: cardioDaSemana(dados.cardios, inicio, semana, fase),
       passosMeta: fase.passosMeta + (cfg?.ajustePassos ?? 0),
     };
   }, [dados, hoje]);

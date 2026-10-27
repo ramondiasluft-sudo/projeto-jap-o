@@ -13,6 +13,7 @@ describe('repositório (IndexedDB)', () => {
     });
     await a.putMedida({ id: 'm1', data: '2026-01-05', tipo: 'peso', valor: 93 });
     await a.putNutricao({ data: '2026-01-05', creatina: true, kcal: 2300 });
+    await a.putCardio({ id: 'c1', data: '2026-01-05', tipo: 'esteira_caminhada', minutos: 15, km: 1.6, velocidadeKmh: 6, sessaoId: 's1' });
 
     const json = JSON.parse(JSON.stringify(await a.exportar()));
     const b = criarRepoDexie('teste-b');
@@ -23,6 +24,7 @@ describe('repositório (IndexedDB)', () => {
     expect((await b.listSessoes())[0].series[0].cargaKg).toBe(30);
     expect((await b.listMedidas()).map((m) => m.id)).toEqual(['m1']);
     expect((await b.getNutricao('2026-01-05'))?.creatina).toBe(true);
+    expect(await b.listCardios()).toEqual([{ id: 'c1', data: '2026-01-05', tipo: 'esteira_caminhada', minutos: 15, km: 1.6, velocidadeKmh: 6, sessaoId: 's1' }]);
   });
 
   it('updateSessao não perde séries em escritas simultâneas', async () => {

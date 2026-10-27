@@ -192,7 +192,13 @@ export default function Hoje() {
           <div className="metric"><div className="v">{f.carboG} g</div><div className="l">carboidrato</div></div>
           <div className="metric"><div className="v">{f.gorduraG} g</div><div className="l">gordura</div></div>
           <div className="metric"><div className="v">{d.passosMeta.toLocaleString('pt-BR')}</div><div className="l">passos</div></div>
-          <div className="metric"><div className="v">{f.cardio ? `${f.cardio.sessoes}× ${f.cardio.minutos}′` : '—'}</div><div className="l">cardio na semana</div></div>
+          <div className="metric">
+            <div className="v">{f.cardio ? `${d.cardioSemana.validas}/${f.cardio.sessoes}` : `${d.cardioSemana.sessoes}×`}</div>
+            <div className="l">
+              cardio na semana{f.cardio ? ` (${f.cardio.minutos}′ cada)` : ' (opcional)'}
+              {d.cardioSemana.minutos > 0 && ` · ${d.cardioSemana.minutos} min feitos`}
+            </div>
+          </div>
         </div>
       </div>
 

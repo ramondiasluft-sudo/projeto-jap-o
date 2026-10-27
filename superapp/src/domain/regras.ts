@@ -75,6 +75,20 @@ export interface Prescricao {
   /** Multiplicador sobre a carga sugerida (deload 0,8; dor alta 0,8). */
   fatorCarga: number;
   avisos: string[];
+  /** Id do exercício no protocolo (antes de variação/troca). */
+  idBase?: string;
+  /** Opções de variação deste exercício (a primeira é a do protocolo). */
+  opcoesVariacao?: { id: string; nome: string }[];
+}
+
+/** Aplica a variação escolhida (ou a preferida do protocolo). Mantém séries, reps e marcações. */
+export function aplicarVariacao(ex: Exercicio, escolhida?: string): Exercicio {
+  const id = escolhida ?? ex.variacaoPreferida;
+  if (!id || id === ex.id) return ex;
+  const v = ex.variacoes?.find((x) => x.id === id);
+  if (!v) return ex;
+  const { variacoes: _v, variacaoPreferida: _p, ...resto } = ex;
+  return { ...resto, id: v.id, nome: v.nome, obs: v.obs };
 }
 
 export interface ContextoTreino {
@@ -84,6 +98,8 @@ export interface ContextoTreino {
   dorAlta?: boolean;
   /** Resultado da regra do inclinado. */
   substituirInclinado?: boolean;
+  /** Variação escolhida pelo usuário (id do protocolo → id usado). */
+  variacoes?: Record<string, string>;
 }
 
 export const FATOR_CARGA_DOR = 0.8;
@@ -160,6 +176,8 @@ export function buscarExercicio(p: Protocolo, id: string): Exercicio | undefined
     if (e) return e;
     const s = t.exercicios.find((x) => x.substituicao?.id === id)?.substituicao;
     if (s) return { ...s };
+    const comVar = t.exercicios.find((x) => x.variacoes?.some((v) => v.id === id));
+    if (comVar) return aplicarVariacao(comVar, id);
   }
   return undefined;
 }
@@ -168,8 +186,8 @@ export function buscarExercicio(p: Protocolo, id: string): Exercicio | undefined
 export function montarTreino(p: Protocolo, treino: TreinoId, ctx: ContextoTreino): Prescricao[] {
   const { fatorSeries, fatorCarga } = p.regras.deload;
   return p.treinos[treino].exercicios.map((original) => {
-    let ex = original;
-    let trocado = false;
+    let ex = aplicarVariacao(original, ctx.variacoes?.[original.id]);
+    let trocado = ex !== original;
     const avisosTroca: string[] = [];
 
     if (original.substituicao && ctx.substituirInclinado && ctx.semana >= original.substituicao.aPartirDaSemana) {
@@ -198,6 +216,10 @@ export function montarTreino(p: Protocolo, treino: TreinoId, ctx: ContextoTreino
     pr.fatorCarga *= fatorDor;
     pr.avisos = [...avisosTroca, ...pr.avisos];
     if (trocado) pr.original = original;
+    pr.idBase = original.id;
+    if (original.variacoes?.length) {
+      pr.opcoesVariacao = [{ id: original.id, nome: original.nome }, ...original.variacoes.map((v) => ({ id: v.id, nome: v.nome }))];
+    }
     return pr;
   });
 }

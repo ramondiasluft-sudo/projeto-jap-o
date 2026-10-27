@@ -53,6 +53,22 @@ export interface Exercicio {
   dropSetFase4?: boolean;
   grupo?: string;
   meta?: { segundos: number; ateSemana: number };
+  /** Variações do mesmo movimento (ex.: barra no lugar de halteres). Cada uma tem histórico de carga próprio. */
+  variacoes?: Variacao[];
+  /** Variação usada por padrão (o usuário pode trocar no treino). */
+  variacaoPreferida?: string;
+}
+
+export interface Variacao {
+  id: string;
+  nome: string;
+  obs?: string;
+}
+
+export interface OpcaoCardio {
+  id: string;
+  nome: string;
+  obs?: string;
 }
 
 export interface Treino {
@@ -116,6 +132,7 @@ export interface Protocolo {
     padrao4: Partial<Record<DiaSemana, TreinoId | null>>;
     obs4dias: string;
   };
+  cardio?: { quando?: string; intensidade?: string; opcoes: OpcaoCardio[] };
   aquecimentoOmbro: {
     aplicaEm: TreinoId[];
     duracaoMin: [number, number];
@@ -175,6 +192,8 @@ export type Config = {
   diasPorSemana: 4 | 5;
   ajusteKcal: number;
   ajustePassos: number;
+  /** Variação escolhida por exercício (id do protocolo → id usado). */
+  variacoes?: Record<string, string>;
   /** A avaliação inicial do JSON já foi gravada como linha de base. */
   linhaBaseCarregada?: boolean;
 };
@@ -204,6 +223,8 @@ export type SessaoTreino = {
   duracaoMin?: number;
   /** Aquecimento específico do treino (treinos[X].aquecimento). */
   aquecimentoEspecificoFeito?: boolean;
+  /** Anotações livres do treino. */
+  observacoes?: string;
   /** Ids dos alongamentos de correção postural feitos no fim. */
   alongamentosFeitos?: string[];
   finalizada: boolean;
@@ -239,4 +260,15 @@ export type DecisaoAjuste = {
   data: string;
   sugestao: 'subir' | 'baixar';
   escolha: TipoAjuste | 'ignorar';
+};
+
+export type Cardio = {
+  id: string;
+  data: string;
+  tipo: string; // id de protocolo.cardio.opcoes
+  minutos: number;
+  km?: number;
+  velocidadeKmh?: number;
+  /** Sessão de treino em que foi feito (vazio = avulso). */
+  sessaoId?: string;
 };

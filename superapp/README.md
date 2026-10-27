@@ -50,3 +50,10 @@ a branch `gh-pages` (workflow `.github/workflows/superapp-pages.yml`).
 - **Linha de base (v2)**: gravada uma vez, no primeiro acesso (ou ao restaurar um backup antigo), com ids
   fixos `base-<medida>`. A variação de cada medida é contada a partir dela, mesmo que existam registros
   de peso anteriores.
+- **Variações de exercício**: `exercicios[].variacoes` + `variacaoPreferida` no JSON. A troca feita no
+  treino fica salva na configuração e vale para os próximos treinos. Cada variação tem histórico de carga
+  próprio (barra e halteres não se comparam). Séries, reps e marcações (força, +1 série, drop set) são herdadas.
+- **Cardio**: opções em `cardio.opcoes` no JSON; registro no fim do treino ou avulso (tela Treino).
+  Km ou velocidade: o que faltar é calculado; o que foi digitado nunca é sobrescrito. A semana conta
+  quantas sessões atingiram os minutos da meta da fase.
+- **Anotações** do treino ficam na sessão e aparecem no histórico.
