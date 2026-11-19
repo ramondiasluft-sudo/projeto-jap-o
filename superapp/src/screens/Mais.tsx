@@ -151,6 +151,18 @@ function Configuracoes() {
           </div>
           {cfg.diasPorSemana === 4 && <p className="muted">{P.agendaSemanal.obs4dias}</p>}
         </div>
+        <div>
+          <div className="small muted" style={{ marginBottom: 4 }}>Treino do dia</div>
+          <div className="seg">
+            <button className={cfg.agenda !== 'sequencia' ? 'on' : ''} onClick={() => repo.setConfig({ ...cfg, agenda: 'semana' })}>Pelo dia da semana</button>
+            <button className={cfg.agenda === 'sequencia' ? 'on' : ''} onClick={() => repo.setConfig({ ...cfg, agenda: 'sequencia' })}>Próximo da sequência</button>
+          </div>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            {cfg.agenda === 'sequencia'
+              ? 'O app sugere o treino seguinte ao último que você fez (A→B→C→D→E), em qualquer dia.'
+              : 'O app segue a agenda fixa por dia da semana.'}
+          </p>
+        </div>
         <div className="row between">
           <span className="small">
             Ajustes aceitos: <strong className="num">{cfg.ajusteKcal > 0 ? '+' : ''}{cfg.ajusteKcal} kcal</strong> · <strong className="num">+{cfg.ajustePassos.toLocaleString('pt-BR')} passos</strong>

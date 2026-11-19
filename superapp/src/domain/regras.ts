@@ -40,6 +40,21 @@ export function treinoDoDia(
   return padrao[diaDaSemana(data)] ?? null;
 }
 
+/**
+ * Próximo treino na sequência (A→B→C→D→E→A…), para quem treina em ordem e não por dia
+ * da semana. Se já houve treino finalizado hoje, devolve o de hoje.
+ */
+export function proximoTreinoNaSequencia(sessoes: SessaoTreino[], ordem: TreinoId[], hoje: string): TreinoId {
+  const feitas = [...sessoes]
+    .filter((s) => s.finalizada)
+    .sort((a, b) => (a.data === b.data ? a.iniciadaEm - b.iniciadaEm : a.data < b.data ? -1 : 1));
+  const ultima = feitas[feitas.length - 1];
+  if (!ultima) return ordem[0];
+  if (ultima.data === hoje) return ultima.treino;
+  const i = ordem.indexOf(ultima.treino);
+  return ordem[(i + 1) % ordem.length];
+}
+
 /** Início (inclusive) e fim (inclusive) de uma semana do programa. */
 export function intervaloDaSemana(inicio: string, semana: number): [string, string] {
   const ini = somarDias(inicio, (semana - 1) * 7);

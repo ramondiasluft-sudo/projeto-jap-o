@@ -47,6 +47,10 @@ function Checklist() {
   const dia = d.nutricao.find((n) => n.data === d.hoje);
   const passos = d.medidas.find((m) => m.id === `passos-${d.hoje}`)?.valor;
   const sono = d.medidas.find((m) => m.id === `sono-${d.hoje}`)?.valor;
+  const pesoHoje = d.medidas.find((m) => m.tipo === 'peso' && m.data === d.hoje)?.valor;
+  const ultimoPeso = [...d.medidas].filter((m) => m.tipo === 'peso').sort((a, b) => (a.data < b.data ? -1 : 1)).pop();
+  const [pesoTxt, setPesoTxt] = useState(pesoHoje?.toString().replace('.', ',') ?? '');
+  useEffect(() => setPesoTxt(pesoHoje?.toString().replace('.', ',') ?? ''), [pesoHoje]);
   const [passosTxt, setPassosTxt] = useState(passos?.toString() ?? '');
   const [sonoTxt, setSonoTxt] = useState(sono?.toString().replace('.', ',') ?? '');
   useEffect(() => setPassosTxt(passos?.toString() ?? ''), [passos]);
@@ -61,6 +65,20 @@ function Checklist() {
   return (
     <div className="card">
       <h2>Checklist de hoje</h2>
+      <div className="check">
+        <span className={`tick ${pesoHoje !== undefined ? 'on' : ''}`}>{pesoHoje !== undefined && <IcCheck />}</span>
+        <div className="grow">
+          Peso <span className="muted">em jejum</span>
+          {pesoHoje === undefined && ultimoPeso && (
+            <div className="small muted">último: {fmt(ultimoPeso.valor)} kg em {formatarData(ultimoPeso.data)}</div>
+          )}
+        </div>
+        <input
+          className="input num" style={{ width: 110 }} inputMode="decimal" placeholder="kg" value={pesoTxt}
+          onChange={(e) => setPesoTxt(e.target.value)}
+          onBlur={() => pesoTxt !== (pesoHoje?.toString().replace('.', ',') ?? '') && salvarMedidaDiaria('peso', d.hoje, lerNumero(pesoTxt))}
+        />
+      </div>
       <div className="check">
         <button className={`tick ${dia?.creatina ? 'on' : ''}`} aria-label="Creatina" onClick={() => salvarDia({ creatina: !dia?.creatina })}>
           {dia?.creatina && <IcCheck />}

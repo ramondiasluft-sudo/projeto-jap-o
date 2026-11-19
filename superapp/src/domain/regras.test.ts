@@ -11,6 +11,7 @@ import {
   mediaMovel,
   montarTreino,
   parceiroDoBiset,
+  proximoTreinoNaSequencia,
   resumoSemana26,
   rirMinimo,
   semanaAtual,
@@ -138,8 +139,8 @@ describe('séries e reps por fase', () => {
     const p = ex('E', 5, 'triceps_frances_cabo', { dorAlta: true });
     expect(p.exercicio.id).toBe('triceps_barra_reta');
     expect(p.fatorCarga).toBeCloseTo(0.8);
-    const sem = ex('A', 5, 'supino_maquina', { dorAlta: true });
-    expect(sem.exercicio.id).toBe('supino_maquina');
+    const sem = ex('C', 5, 'supino_maquina_smith', { dorAlta: true });
+    expect(sem.exercicio.id).toBe('supino_maquina_smith');
     expect(sem.fatorCarga).toBeCloseTo(0.8);
     expect(sem.avisos[0]).toMatch(/reduza/);
   });
@@ -420,13 +421,37 @@ describe('ombro e bi-sets (19/11)', () => {
     expect(c.find((p) => p.idBase === 'supino_chao_halter_neutro')?.opcoesVariacao?.map((o) => o.id)).toContain('peck_deck');
   });
 
-  it('com dor alta, crucifixo inverso vira face pull e crossover vira supino no chão', () => {
+  it('com dor alta: crucifixo inverso vira face pull, supino convergente vira supino no chão, dead hang vira farmer hold', () => {
     const ctx = { semana: 5, fase: faseDaSemana(P.fases, 5), dorAlta: true };
     expect(montarTreino(P, 'D', ctx).find((p) => p.idBase === 'crucifixo_inverso')!.exercicio.id).toBe('face_pull');
-    expect(montarTreino(P, 'C', ctx).find((p) => p.idBase === 'peito_superior')!.exercicio.id).toBe('supino_chao_halter_neutro');
+    expect(montarTreino(P, 'C', ctx).find((p) => p.idBase === 'peito_superior')!.fatorCarga).toBeCloseTo(0.8);
+    expect(montarTreino(P, 'A', ctx).find((p) => p.idBase === 'supino_maquina')!.exercicio.id).toBe('supino_chao_halter_neutro');
+    expect(montarTreino(P, 'E', ctx).find((p) => p.idBase === 'dead_hang')!.exercicio.id).toBe('farmer_hold');
   });
 
   it('aquecimento de ombro inclui rotação interna (subescapular)', () => {
     expect(P.aquecimentoOmbro.itens.some((i) => /Rotação interna/.test(i.nome))).toBe(true);
+  });
+});
+
+describe('treino do dia na sequência', () => {
+  const ordem = ['A', 'B', 'C', 'D', 'E'] as const;
+  const s = (data: string, treino: 'A' | 'B' | 'C' | 'D' | 'E', finalizada = true) => sessao({ data, treino, finalizada });
+
+  it('sem histórico começa pelo A', () => {
+    expect(proximoTreinoNaSequencia([], [...ordem], '2026-11-19')).toBe('A');
+  });
+
+  it('segue o último treino feito, em qualquer dia (histórico real: …A, B, C → D)', () => {
+    const h = [s('2026-11-11', 'A'), s('2026-11-16', 'B'), s('2026-11-18', 'C')];
+    expect(proximoTreinoNaSequencia(h, [...ordem], '2026-11-19')).toBe('D');
+  });
+
+  it('depois do E volta ao A; treino não finalizado não conta', () => {
+    expect(proximoTreinoNaSequencia([s('2026-11-08', 'E'), s('2026-11-09', 'A', false)], [...ordem], '2026-11-10')).toBe('A');
+  });
+
+  it('se já treinou hoje, mostra o treino de hoje', () => {
+    expect(proximoTreinoNaSequencia([s('2026-11-19', 'D')], [...ordem], '2026-11-19')).toBe('D');
   });
 });

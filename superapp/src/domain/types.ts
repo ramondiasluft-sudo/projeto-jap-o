@@ -216,6 +216,8 @@ export type Config = {
   diasPorSemana: 4 | 5;
   ajusteKcal: number;
   ajustePassos: number;
+  /** Como escolher o treino do dia: pelo dia da semana (padrão) ou o próximo da sequência A→E. */
+  agenda?: 'semana' | 'sequencia';
   /** Refeições montadas que o usuário salvou para repetir. */
   refeicoesSalvas?: RefeicaoSalva[];
   /** Variação escolhida por exercício (id do protocolo → id usado). */

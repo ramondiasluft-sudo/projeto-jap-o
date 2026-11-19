@@ -136,6 +136,7 @@ function LinhaSerie(props: {
       s.reps = lerNumero(reps);
       s.rir = lerNumero(rir);
       if (s.reps === undefined) return setFaltou(true);
+      if (s.reps > 40 && !confirm(`${s.reps} repetições? Confira se não foi erro de digitação.`)) return;
     }
     if (ultima && tecnica) s.tecnica = tecnica;
     setFaltou(false);
@@ -343,6 +344,7 @@ function Execucao({ sessao }: { sessao: SessaoTreino }) {
 
   const finalizar = async () => {
     if (pedeDor && dor === undefined && !confirm('Finalizar sem registrar a dor no ombro?')) return;
+    if (temAquecimento && !sessao.aquecimentoFeito && !confirm('O aquecimento de ombro não foi marcado. Ele protege os tendões: fez mesmo assim? Finalizar?')) return;
     await repo.updateSessao(sessao.id, (a) => ({ ...a, dorOmbro: dor, observacoes: obs.trim() || undefined, finalizada: true, duracaoMin: Math.min(240, Math.max(1, minutos)) }));
     timer.parar();
     window.scrollTo(0, 0);

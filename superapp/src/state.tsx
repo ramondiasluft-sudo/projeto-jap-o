@@ -10,6 +10,7 @@ import {
   semanaAtual,
   semanaDoPrograma,
   statusDor,
+  proximoTreinoNaSequencia,
   treinoDoDia,
   type SugestaoAjuste,
 } from './domain/regras';
@@ -117,7 +118,12 @@ export function DadosProvider({ children }: { children: ReactNode }) {
       semanaBruta,
       semana,
       fase,
-      treinoHoje: semanaBruta >= 1 ? treinoDoDia(P.agendaSemanal, cfg?.diasPorSemana ?? 5, hoje) : null,
+      treinoHoje:
+        semanaBruta < 1
+          ? null
+          : cfg?.agenda === 'sequencia'
+            ? proximoTreinoNaSequencia(dados.sessoes, Object.keys(P.treinos) as TreinoId[], hoje)
+            : treinoDoDia(P.agendaSemanal, cfg?.diasPorSemana ?? 5, hoje),
       dor: statusDor(finalizadas, P.regras.dorOmbro.limiteOk),
       inclinado: avaliarInclinado(semana, finalizadas, hoje, subst?.aPartirDaSemana),
       sugestaoAjuste: sug && !decidida.has(sug.semana) ? sug : null,
