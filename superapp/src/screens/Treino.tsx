@@ -7,7 +7,7 @@ import { novoId, repo } from '../data/repo';
 import { formatarData } from '../domain/datas';
 import { alongamentosDoTreino } from '../domain/medidas';
 import { protocolo as P } from '../domain/protocolo';
-import { cargaSugerida, montarTreino, rirMinimo, type CargaSugerida, type Prescricao } from '../domain/regras';
+import { aplicarVariacao, cargaSugerida, montarTreino, parceiroDoBiset, rirMinimo, type CargaSugerida, type Prescricao } from '../domain/regras';
 import type { SerieRegistrada, SessaoTreino, Tecnica, TreinoId } from '../domain/types';
 import { useDados } from '../state';
 
@@ -198,9 +198,11 @@ function CardExercicio(props: {
   const { p, sessao, sug, rirPadrao, salvar } = props;
   const ex = p.exercicio;
   const feitas = sessao.series.filter((s) => s.exercicioId === ex.id);
-  const parceiro = ex.biset ? P.treinos[ex.biset[0] as TreinoId]?.exercicios[Number(ex.biset.slice(1)) - 1] : undefined;
-  const completo = feitas.length >= p.series;
   const d = useDados();
+  const parceiroBase = parceiroDoBiset(P, sessao.treino, ex);
+  // Mostra o parceiro com a variação em uso (ex.: elevação lateral na máquina).
+  const parceiro = parceiroBase && aplicarVariacao(parceiroBase, d.config?.variacoes?.[parceiroBase.id]);
+  const completo = feitas.length >= p.series;
   // A escolha vale para os próximos treinos também.
   const trocarVariacao = (idBase: string, id: string) => {
     if (!d.config) return;

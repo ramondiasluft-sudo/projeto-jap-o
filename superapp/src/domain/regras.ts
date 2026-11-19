@@ -182,6 +182,19 @@ export function buscarExercicio(p: Protocolo, id: string): Exercicio | undefined
   return undefined;
 }
 
+/**
+ * Parceiro de bi-set. `biset` é o id de outro exercício do mesmo treino; o formato antigo
+ * por posição ("A7" = 7º exercício do treino A) continua aceito.
+ */
+export function parceiroDoBiset(p: Protocolo, treino: TreinoId, ex: Exercicio): Exercicio | undefined {
+  if (!ex.biset) return undefined;
+  const lista = p.treinos[treino].exercicios;
+  const porId = lista.find((e) => e.id === ex.biset);
+  if (porId) return porId;
+  const m = ex.biset.match(/^([A-E])(\d+)$/);
+  return m ? p.treinos[m[1] as TreinoId]?.exercicios[Number(m[2]) - 1] : undefined;
+}
+
 /** Lista de exercícios do treino já ajustada à fase, substituição e dor. */
 export function montarTreino(p: Protocolo, treino: TreinoId, ctx: ContextoTreino): Prescricao[] {
   const { fatorSeries, fatorCarga } = p.regras.deload;

@@ -19,7 +19,8 @@
         "Dor no joelho aliviada com cadeira extensora leve como aquecimento",
         "Pegada fraca",
         "27/10/2026: trocou supino reto com halteres por barra e elevação lateral com halteres por máquina — sentiu mais segurança no ombro",
-        "27/10/2026: cardio pós-treino de 15 min, 1,60 km, velocidade média 6,0 km/h"
+        "27/10/2026: cardio pós-treino de 15 min, 1,60 km, velocidade média 6,0 km/h",
+        "19/11/2026: crucifixo/peck deck exige demais do ombro — trocado por supino no chão; bi-sets reorganizados para aparelho + peso livre (academia de rede)"
       ]
     },
     "metas": {
@@ -77,6 +78,7 @@
     "duracaoMin": [6, 8],
     "itens": [
       { "nome": "Rotação externa no cabo", "series": 2, "reps": "15 cada braço" },
+      { "nome": "Rotação interna no cabo (leve, cotovelo colado ao corpo)", "series": 2, "reps": "15 cada braço" },
       { "nome": "Face pull com corda (leve)", "series": 2, "reps": "15" },
       { "nome": "Elevação em Y no banco inclinado (1–2 kg)", "series": 2, "reps": "12" },
       { "nome": "1–2 séries leves do primeiro exercício", "series": 2, "reps": "-" }
@@ -88,16 +90,16 @@
       "nome": "Superior força",
       "exercicios": [
         { "id": "supino_reto_halter_neutro", "nome": "Supino reto com halteres, pegada neutra", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "obs": "Pegada neutra protege o ombro",
-          "variacoes": [{ "id": "supino_reto_barra", "nome": "Supino reto com barra", "obs": "Preferido desde 27/10: mais seguro para o ombro" }],
+          "variacoes": [{ "id": "supino_reto_barra", "nome": "Supino reto com barra", "obs": "Preferido desde 27/10. Pegada só um pouco mais larga que os ombros, cotovelos a ~45° do tronco; se doer na descida, pare um palmo acima do peito" }],
           "variacaoPreferida": "supino_reto_barra" },
-        { "id": "puxada_frente_aberta", "nome": "Puxada frente pegada aberta", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "strap": true },
+        { "id": "puxada_frente_aberta", "nome": "Puxada frente pegada aberta", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true, "strap": true, "obs": "Pegada só um pouco mais larga que os ombros; puxe até o queixo, nunca atrás da nuca" },
         { "id": "remada_baixa_triangulo", "nome": "Remada baixa triângulo", "series": 3, "reps": [8, 10], "tipo": "composto", "strap": true },
         { "id": "supino_maquina", "nome": "Supino máquina convergente", "series": 3, "reps": [8, 10], "tipo": "composto", "ombroSensivel": true },
-        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 3, "reps": [12, 15], "tipo": "isolado", "biset": "A7",
-          "variacoes": [{ "id": "elevacao_lateral_maquina", "nome": "Elevação lateral na máquina", "obs": "Preferida desde 27/10: mais segura para o ombro" }],
+        { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 3, "reps": [12, 15], "tipo": "isolado", "biset": "rosca_direta_w",
+          "variacoes": [{ "id": "elevacao_lateral_maquina", "nome": "Elevação lateral na máquina", "obs": "Preferida desde 27/10. Suba só até a altura do ombro (no máximo 90°), braços um pouco à frente do corpo, sem impulso" }],
           "variacaoPreferida": "elevacao_lateral_maquina" },
-        { "id": "rosca_direta_w", "nome": "Rosca direta barra W", "series": 3, "reps": [8, 10], "tipo": "isolado" },
-        { "id": "triceps_corda", "nome": "Tríceps pulley com corda", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "A6" }
+        { "id": "rosca_direta_w", "nome": "Rosca direta barra W", "series": 3, "reps": [8, 10], "tipo": "isolado", "biset": "elevacao_lateral_halter" },
+        { "id": "triceps_corda", "nome": "Tríceps pulley com corda", "series": 3, "reps": [10, 12], "tipo": "isolado" }
       ]
     },
     "B": {
@@ -106,10 +108,10 @@
         { "id": "agachamento_smith_hack", "nome": "Agachamento no smith ou hack", "series": 4, "reps": [6, 8], "tipo": "composto", "forcaFase3": true },
         { "id": "stiff_halter", "nome": "Stiff com halteres", "series": 3, "reps": [8, 10], "tipo": "composto", "forcaFase3": true, "strap": true },
         { "id": "leg_press", "nome": "Leg press 45°", "series": 3, "reps": [10, 12], "tipo": "composto" },
-        { "id": "cadeira_flexora", "nome": "Cadeira flexora", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "B5" },
+        { "id": "cadeira_flexora", "nome": "Cadeira flexora", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "dead_bug" },
         { "id": "elevacao_pelvica", "nome": "Elevação pélvica na máquina ou com barra", "series": 3, "reps": [10, 12], "tipo": "composto", "obs": "Correção postural (glúteo)" },
         { "id": "abdominal_cabo", "nome": "Abdominal no cabo (ajoelhado)", "series": 3, "reps": [12, 15], "tipo": "isolado" },
-        { "id": "dead_bug", "nome": "Dead bug (lombar colada no chão)", "series": 3, "reps": [8, 8], "tipo": "isolado", "obs": "8 cada lado" }
+        { "id": "dead_bug", "nome": "Dead bug (lombar colada no chão)", "series": 3, "reps": [8, 8], "tipo": "isolado", "obs": "8 cada lado", "biset": "cadeira_flexora" }
       ],
       "aquecimento": [
         { "id": "cadeira_extensora_aquec", "nome": "Cadeira extensora leve (aquecimento do joelho)", "series": 2, "reps": [15, 20], "tipo": "aquecimento", "obs": "Carga leve; alivia a dor no joelho antes do agachamento" }
@@ -118,24 +120,25 @@
     "C": {
       "nome": "Empurrar (peito e ombros)",
       "exercicios": [
-        { "id": "peito_superior", "nome": "Crossover de baixo para cima", "series": 4, "reps": [10, 12], "tipo": "isolado",
+        { "id": "peito_superior", "nome": "Crossover de baixo para cima", "series": 4, "reps": [10, 12], "tipo": "isolado", "obs": "Mãos sobem só até a altura do peito; braços nunca abrem para trás da linha do corpo", "ombroSensivel": true, "alternativaSeDor": "supino_chao_halter_neutro",
           "substituicao": { "aPartirDaSemana": 18, "condicao": "4 semanas com dor <= 2", "id": "supino_inclinado_halter_neutro", "nome": "Supino inclinado 15–30° com halteres, pegada neutra", "series": 4, "reps": [6, 10], "tipo": "composto", "cargaInicialPct": 50 } },
         { "id": "supino_maquina_smith", "nome": "Supino máquina ou reto no smith", "series": 3, "reps": [8, 10], "tipo": "composto", "ombroSensivel": true },
-        { "id": "peck_deck", "nome": "Peck deck (voador)", "series": 3, "reps": [12, 15], "tipo": "isolado", "obs": "Pausa de 1 s contraído" },
+        { "id": "supino_chao_halter_neutro", "nome": "Supino no chão com halteres, pegada neutra (floor press)", "series": 3, "reps": [10, 12], "tipo": "composto", "obs": "No lugar do peck deck/crucifixo: o chão limita a amplitude e poupa o ombro. Pausa de 1 s com os cotovelos no chão",
+          "variacoes": [{ "id": "peck_deck", "nome": "Peck deck (voador), amplitude curta", "obs": "Só se não doer: na abertura, as mãos não passam da linha do peito" }] },
         { "id": "elevacao_lateral_cabo", "nome": "Elevação lateral no cabo, unilateral", "series": 4, "reps": [12, 15], "tipo": "isolado" },
-        { "id": "face_pull", "nome": "Face pull", "series": 3, "reps": [15, 15], "tipo": "isolado" },
-        { "id": "triceps_testa_halter", "nome": "Tríceps testa com halteres", "series": 3, "reps": [10, 12], "tipo": "isolado" }
+        { "id": "face_pull", "nome": "Face pull", "series": 3, "reps": [15, 15], "tipo": "isolado", "biset": "triceps_testa_halter" },
+        { "id": "triceps_testa_halter", "nome": "Tríceps testa com halteres", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "face_pull" }
       ]
     },
     "D": {
       "nome": "Puxar (costas largas)",
       "exercicios": [
-        { "id": "puxada_frente_aberta", "nome": "Puxada frente pegada aberta", "series": 4, "reps": [8, 10], "tipo": "composto", "strap": true },
+        { "id": "puxada_frente_aberta", "nome": "Puxada frente pegada aberta", "series": 4, "reps": [8, 10], "tipo": "composto", "strap": true, "obs": "Pegada só um pouco mais larga que os ombros; puxe até o queixo, nunca atrás da nuca" },
         { "id": "remada_articulada_serrote", "nome": "Remada máquina articulada ou serrote", "series": 3, "reps": [8, 10], "tipo": "composto", "strap": true },
         { "id": "pulldown_braco_estendido", "nome": "Pulldown braço estendido no cabo", "series": 3, "reps": [12, 15], "tipo": "isolado" },
         { "id": "puxada_neutra_supinada", "nome": "Puxada pegada neutra ou supinada", "series": 3, "reps": [10, 12], "tipo": "composto", "strap": true },
-        { "id": "crucifixo_inverso", "nome": "Crucifixo inverso na máquina", "series": 3, "reps": [15, 15], "tipo": "isolado" },
-        { "id": "rosca_alternada", "nome": "Rosca alternada com halteres", "series": 3, "reps": [10, 12], "tipo": "isolado" },
+        { "id": "crucifixo_inverso", "nome": "Crucifixo inverso na máquina", "series": 3, "reps": [15, 15], "tipo": "isolado", "obs": "Braços um pouco abaixo da linha do ombro, cotovelos levemente dobrados", "ombroSensivel": true, "alternativaSeDor": "face_pull", "biset": "rosca_alternada" },
+        { "id": "rosca_alternada", "nome": "Rosca alternada com halteres", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "crucifixo_inverso" },
         { "id": "farmer_walk", "nome": "Farmer walk com halteres", "series": 3, "metros": [30, 40], "tipo": "distancia", "grupo": "pegada" }
       ]
     },
@@ -143,15 +146,15 @@
       "nome": "Braços, ombros e core",
       "exercicios": [
         { "id": "elevacao_lateral_halter", "nome": "Elevação lateral com halteres", "series": 4, "reps": [12, 15], "tipo": "isolado", "dropSetFase4": true,
-          "variacoes": [{ "id": "elevacao_lateral_maquina", "nome": "Elevação lateral na máquina", "obs": "Preferida desde 27/10: mais segura para o ombro" }],
+          "variacoes": [{ "id": "elevacao_lateral_maquina", "nome": "Elevação lateral na máquina", "obs": "Preferida desde 27/10. Suba só até a altura do ombro (no máximo 90°), braços um pouco à frente do corpo, sem impulso" }],
           "variacaoPreferida": "elevacao_lateral_maquina" },
-        { "id": "rosca_scott_maquina", "nome": "Rosca scott máquina", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E3" },
-        { "id": "triceps_barra_reta", "nome": "Tríceps pulley barra reta", "series": 3, "reps": [10, 12], "tipo": "isolado" },
-        { "id": "rosca_martelo", "nome": "Rosca martelo", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "E5" },
-        { "id": "triceps_frances_cabo", "nome": "Tríceps francês no cabo, unilateral", "series": 3, "reps": [12, 12], "tipo": "isolado", "ombroSensivel": true, "alternativaSeDor": "triceps_barra_reta" },
-        { "id": "rosca_inversa_w", "nome": "Rosca inversa na barra W", "series": 2, "reps": [12, 15], "tipo": "isolado", "grupo": "pegada" },
+        { "id": "rosca_scott_maquina", "nome": "Rosca scott máquina", "series": 3, "reps": [10, 12], "tipo": "isolado" },
+        { "id": "triceps_barra_reta", "nome": "Tríceps pulley barra reta", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "rosca_martelo" },
+        { "id": "rosca_martelo", "nome": "Rosca martelo", "series": 3, "reps": [10, 12], "tipo": "isolado", "biset": "triceps_barra_reta" },
+        { "id": "triceps_frances_cabo", "nome": "Tríceps francês no cabo, unilateral", "series": 3, "reps": [12, 12], "tipo": "isolado", "ombroSensivel": true, "alternativaSeDor": "triceps_barra_reta", "biset": "rosca_inversa_w" },
+        { "id": "rosca_inversa_w", "nome": "Rosca inversa na barra W", "series": 2, "reps": [12, 15], "tipo": "isolado", "grupo": "pegada", "biset": "triceps_frances_cabo" },
         { "id": "elevacao_pernas", "nome": "Elevação de pernas / abdominal infra", "series": 3, "reps": [10, 15], "tipo": "isolado" },
-        { "id": "dead_hang", "nome": "Suspensão na barra (dead hang)", "series": 3, "segundos": [0, 60], "tipo": "tempo", "grupo": "pegada", "meta": { "segundos": 60, "ateSemana": 12 } }
+        { "id": "dead_hang", "nome": "Suspensão na barra (dead hang)", "series": 3, "segundos": [0, 60], "tipo": "tempo", "grupo": "pegada", "meta": { "segundos": 60, "ateSemana": 12 }, "obs": "Se incomodar o ombro, faça com os pés apoiados (suspensão parcial)", "ombroSensivel": true, "alternativaSeDor": "farmer_walk" }
       ]
     }
   },

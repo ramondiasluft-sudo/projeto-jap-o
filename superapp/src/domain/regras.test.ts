@@ -10,6 +10,7 @@ import {
   faseDaSemana,
   mediaMovel,
   montarTreino,
+  parceiroDoBiset,
   resumoSemana26,
   rirMinimo,
   semanaAtual,
@@ -385,5 +386,47 @@ describe('variações de exercício', () => {
 
   it('nome da variação é encontrado para gráficos e resumo', () => {
     expect(buscarExercicio(P, 'elevacao_lateral_maquina')?.nome).toBe('Elevação lateral na máquina');
+  });
+});
+
+describe('ombro e bi-sets (19/11)', () => {
+  const treinos = ['A', 'B', 'C', 'D', 'E'] as const;
+
+  it('todo bi-set aponta para um exercício do mesmo treino, e o par é recíproco', () => {
+    for (const t of treinos) {
+      for (const ex of P.treinos[t].exercicios) {
+        if (!ex.biset) continue;
+        const par = parceiroDoBiset(P, t, ex);
+        expect(par, `${t}/${ex.id}`).toBeDefined();
+        expect(par!.biset, `${t}/${par!.id} ↔ ${ex.id}`).toBe(ex.id);
+      }
+    }
+  });
+
+  it('cada exercício está em no máximo um bi-set', () => {
+    for (const t of treinos) {
+      const ids = P.treinos[t].exercicios.filter((e) => e.biset).map((e) => e.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+  });
+
+  it('aceita o formato antigo por posição', () => {
+    expect(parceiroDoBiset(P, 'A', { ...P.treinos.A.exercicios[0], biset: 'A6' })?.id).toBe('rosca_direta_w');
+  });
+
+  it('peck deck saiu do treino C (virou variação do supino no chão)', () => {
+    const c = montarTreino(P, 'C', { semana: 1, fase: faseDaSemana(P.fases, 1) });
+    expect(c.map((p) => p.exercicio.id)).not.toContain('peck_deck');
+    expect(c.find((p) => p.idBase === 'supino_chao_halter_neutro')?.opcoesVariacao?.map((o) => o.id)).toContain('peck_deck');
+  });
+
+  it('com dor alta, crucifixo inverso vira face pull e crossover vira supino no chão', () => {
+    const ctx = { semana: 5, fase: faseDaSemana(P.fases, 5), dorAlta: true };
+    expect(montarTreino(P, 'D', ctx).find((p) => p.idBase === 'crucifixo_inverso')!.exercicio.id).toBe('face_pull');
+    expect(montarTreino(P, 'C', ctx).find((p) => p.idBase === 'peito_superior')!.exercicio.id).toBe('supino_chao_halter_neutro');
+  });
+
+  it('aquecimento de ombro inclui rotação interna (subescapular)', () => {
+    expect(P.aquecimentoOmbro.itens.some((i) => /Rotação interna/.test(i.nome))).toBe(true);
   });
 });
